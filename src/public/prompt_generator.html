@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Prompt Generator</title>
+    <script type="text/javascript" src="bundle.js"></script>
+    <link
+            rel="stylesheet"
+            href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+            crossorigin="anonymous"
+    />
+    <script
+            src="https://code.jquery.com/jquery-3.4.1.js"
+            integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+            crossorigin="anonymous"
+    ></script>
+    <script
+            src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"
+    ></script>
+    <script
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+            crossorigin="anonymous"
+    ></script>
+
+    <script>
+        let prompts = [];
+
+        console.log(fscode.sampleReq())
+        
+        function genPrompt() {
+        }
+
+        function deletePrompt() {
+
+        }
+
+        function savePrompt() {
+            let newPrompt = document.getElementById("promptDisplay").innerHTML;
+            for (let i = 0; i < prompts.length; i++) {
+                if (prompts[i] === newPrompt) {
+
+                } else {
+                    prompts.push(newPrompt)
+
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: lightgrey;
+        }
+
+        nav {
+            background-color: pink;
+        }
+    </style>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="navbar-brand">
+            <h1>Amazone's Agile Writer</h1>
+        </div>
+    </nav>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="#">Home</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="#">My Documents</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="#">Word Processor</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="#">Prompt Generator</a>
+            </li>
+        </ul>
+
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <button class="rounded bg-dark text-light">My Account</button>
+            </li>
+        </ul>
+    </nav>
+</head>
+
+<body>
+<div class="container-fluid">
+    <br>
+
+    <div class="row">
+        <div class="col-8">
+            <div class="card-header bg-light">
+                <nav class="navbar navbar-expand-lg navbar-dark bg-light">
+                    <ul class="navbar-nav">
+                        <li style="padding-right: 10px;">
+                            Font Size:
+                            <select id="fontSize" onclick="changeSize()">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                            </select>
+                        </li>
+
+                        <li style="padding-right: 10px;">
+                            Font:
+                            <select id="input-font" class="input" onchange="changeFont(this);">
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Sans serif">Sans serif</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Palatino">Palatino</option>
+                                <option value="Garamond">Garamond</option>
+                                <option value="Comic Sans MS">Comic Sans MS</option>
+                                <option value="Arial Black">Arial Black</option>
+                                <option value="Tahoma">Tahoma</option>
+                                <option value="Comic Sans MS">Comic Sans MS</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Rainway">Rainway</option>
+                            </select>
+                        </li>
+
+                        <li style="padding-right: 10px;">
+                            <a href="" onclick="">
+                                <span class="fa fa-bold fa-fw"></span>
+                            </a>
+                        </li>
+
+                        <li style="padding-right: 10px;">
+                            <a href="" onclick="">
+                                <span class="fa fa-italic fa-fw"></span>
+                            </a>
+                        </li>
+
+                        <li style="padding-right: 10px;">
+                            <a href="" onclick="">
+                                <span class="fa fa-underline fa-fw"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div><!--card-header-->
+            <div class="card-body" style="background-color: white; border-radius: 0 0 5px 5px;">
+                <form>
+                    <div class="form-group">
+                        <textarea class="form-control" rows="5" id="txtBox"
+                                  placeholder="Enter keywords to generate a prompt..."></textarea>
+                        <textarea type="text" readonly rows="15" class="form-control-plaintext" id="promptDisplay"> Select generated prompt to be shown here.
+                                </textarea>
+                    </div>
+                </form>
+            </div>
+        </div><!--class="col-8"-->
+
+        <div class="col-4">
+            <div class="row" style="padding-right: 15px; padding-bottom: 15px;">
+                <div class="card" style="flex: auto;">
+                    <div class="card-header">
+                        <h3>Generated Prompts</h3>
+                    </div>
+                    <div class="card-body" style="overflow-y: auto;">
+                        <ul class="list-group">
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 1</button>
+                            </li>
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 2</button>
+                            </li>
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 3</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div><!--Inner row 1-->
+
+            <div class="row" style="padding-right: 15px;">
+                <div class="card" style="flex: auto; min-height: 340px;">
+                    <div class="card-header">
+                        <h3>Saved Prompts</h3>
+                    </div>
+                    <div class="card-body" style="overflow-y: auto; max-height: 270px;">
+                        <ul class="list-group">
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 1</button>
+                            </li>
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 2</button>
+                            </li>
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 3</button>
+                            </li>
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 4</button>
+                            </li>
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 5</button>
+                            </li>
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 6</button>
+                            </li>
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 7</button>
+                            </li>
+                            <li class="list-group-item" style="text-align: center;">
+                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 8</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div><!--Inner row 2-->
+        </div><!--class="col-4"-->
+    </div><!--class="row"-->
+
+    <br>
+    <div class="justify-content-center">
+        <button class="rounded bg-dark btn-outline-dark text-light" onclick="genPrompt()" id="genP">Generate Prompt
+        </button>
+        <button class="rounded bg-dark btn-outline-dark text-light" onclick="deletePrompt()" id="delP">Delete Prompt
+        </button>
+        <button class="rounded bg-dark btn-outline-dark text-light" onclick="savePrompt()" id="sP">Save Prompt</button>
+    </div>
+</div>
+</body>
+</html>
+
