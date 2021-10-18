@@ -3,7 +3,8 @@
 	"main": "server.js",
 	"private": true,
 	"scripts": {
-		"prestart": "npm install"
+		"prestart": "npm install",
+		"build": "dotnet fable src && webpack"
 	},
 	"devDependencies": {
 		"ejs": "^3.1.5",

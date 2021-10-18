@@ -13,5 +13,6 @@
     <PackageReference Include="Fable.SimpleHttp" Version="3.0.0" />
     <PackageReference Include="FSharp.Control.Reactive" Version="5.0.2" />
     <PackageReference Include="FSharp.Data" Version="4.2.4" />
+    <PackageReference Include="FSharpPlus" Version="1.2.2" />
   </ItemGroup>
 </Project>

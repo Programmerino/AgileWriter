@@ -34,8 +34,6 @@
 
     <script>
         let prompts = [];
-
-        console.log(fscode.sampleReq())
         
         function genPrompt() {
         }
@@ -169,8 +167,8 @@
                     <div class="form-group">
                         <textarea class="form-control" rows="5" id="txtBox"
                                   placeholder="Enter keywords to generate a prompt..."></textarea>
-                        <textarea type="text" readonly rows="15" class="form-control-plaintext" id="promptDisplay"> Select generated prompt to be shown here.
-                                </textarea>
+                        <p type="text" id="promptDisplay"> Select generated prompt to be shown here.
+                                </p>
                     </div>
                 </form>
             </div>
@@ -183,16 +181,7 @@
                         <h3>Generated Prompts</h3>
                     </div>
                     <div class="card-body" style="overflow-y: auto;">
-                        <ul class="list-group">
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 1</button>
-                            </li>
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 2</button>
-                            </li>
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 3</button>
-                            </li>
+                        <ul class="list-group" id="generatedPromptList">
                         </ul>
                     </div>
                 </div>
@@ -204,31 +193,7 @@
                         <h3>Saved Prompts</h3>
                     </div>
                     <div class="card-body" style="overflow-y: auto; max-height: 270px;">
-                        <ul class="list-group">
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 1</button>
-                            </li>
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 2</button>
-                            </li>
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 3</button>
-                            </li>
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 4</button>
-                            </li>
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 5</button>
-                            </li>
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 6</button>
-                            </li>
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 7</button>
-                            </li>
-                            <li class="list-group-item" style="text-align: center;">
-                                <button class="rounded bg-dark btn-outline-dark text-light">Prompt 8</button>
-                            </li>
+                        <ul class="list-group" id="savedPromptList">
                         </ul>
                     </div>
                 </div>
@@ -238,11 +203,11 @@
 
     <br>
     <div class="justify-content-center">
-        <button class="rounded bg-dark btn-outline-dark text-light" onclick="genPrompt()" id="genP">Generate Prompt
+        <button class="rounded bg-dark btn-outline-dark text-light" onclick="fscode.newPrompt()" id="genP">Generate Prompt
         </button>
-        <button class="rounded bg-dark btn-outline-dark text-light" onclick="deletePrompt()" id="delP">Delete Prompt
+        <button class="rounded bg-dark btn-outline-dark text-light" onclick="fscode.removePrompt()" id="delP">Delete Prompt
         </button>
-        <button class="rounded bg-dark btn-outline-dark text-light" onclick="savePrompt()" id="sP">Save Prompt</button>
+        <button class="rounded bg-dark btn-outline-dark text-light" onclick='alert("unimplemented")' id="sP">Save Prompt</button>
     </div>
 </div>
 </body>
