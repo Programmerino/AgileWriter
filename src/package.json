@@ -1,14 +1,21 @@
 {
-  "private": true,
-  "scripts": {
-    "postinstall": "dotnet tool restore",
-    "start": "dotnet fable watch src --run webpack-dev-server",
-    "build": "dotnet fable src && webpack"
-  },
-  "devDependencies": {
-    "webpack": "^4.46.0",
-    "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "^3.11.2"
-  },
-  "version": "1.0.0"
+	"name": "agile-writer",
+	"main": "server.js",
+	"private": true,
+	"scripts": {
+		"prestart": "npm install"
+	},
+	"devDependencies": {
+		"ejs": "^3.1.5",
+		"ejs-lint": "^1.1.0",
+		"express": "^4.17.1",
+		"pg-promise": "^10.11.1",
+		"webpack": "^4.46.0",
+		"webpack-cli": "^3.3.0",
+		"webpack-dev-server": "^3.11.2"
+	},
+	"version": "1.0.0",
+	"dependencies": {
+		"body-parser": "^1.19.0"
+	}
 }

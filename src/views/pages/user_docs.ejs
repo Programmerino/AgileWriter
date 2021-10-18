@@ -1,0 +1,63 @@
+<%- include ('../partials/header') %>
+    <style>
+        body {
+            background-color: lightgrey;
+        }
+
+        nav {
+            background-color: pink;
+        }
+    </style>
+</head>
+
+<body>
+	<%- include ('../partials/menu') %>
+	<div class="container-fluid">
+		<br>
+		<div class="row d-flex">
+			<div class="col-md-3 justify-content-center">
+				<div class="card">
+					<div class="card-header">
+						<h3>Present Directory</h3>
+					</div>
+					<div class="card-body">
+						<ul class="list-group list-group-flush" id="file_directory">
+							<li class="list-group-item">
+								<a href="#">Documents</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<br>
+				<div class="d-flex row justify-content-center">
+					<div class="col-sm-5">
+						<button class="rounded bg-dark btn-outline-dark text-light" onclick="createNewDocument()">New
+							Document
+						</button>
+					</div>
+					<div class="col-sm-5">
+						<button class="rounded bg-dark btn-outline-dark text-light" onclick="createNewFolder()">New Folder
+						</button>
+					</div>
+				</div>
+
+			</div>
+			<div class="col">
+				<div class="flex-row bg-light">
+					<div class="card-header">
+						<h3>Present Folder</h3>
+					</div>
+					<div>
+						<table class="table" id="curr_user_documents">
+							<tbody>
+							<tr></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+<script src="../../resources/js/docs.js"></script>
+<%- include('../partials/footer') %>
