@@ -4,7 +4,8 @@
 	"private": true,
 	"scripts": {
 		"prestart": "npm install",
-		"build": "dotnet fable src && webpack"
+		"build": "dotnet fable src && webpack",
+		"watch-compile": "dotnet fable watch src"
 	},
 	"devDependencies": {
 		"ejs": "^3.1.5",
