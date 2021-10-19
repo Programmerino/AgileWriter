@@ -5,7 +5,7 @@
 	"scripts": {
 		"prestart": "npm install",
 		"build": "dotnet fable src && webpack",
-		"watch-compile": "dotnet fable watch src",
+		"watch-compile": "dotnet fable watch src"
 	},
 	"devDependencies": {
 		"webpack": "^4.46.0",
