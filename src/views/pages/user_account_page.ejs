@@ -1,0 +1,66 @@
+<%- include ('../partials/header') %>
+    <style>
+        
+    </style>
+</head>
+
+<body>
+    <%- include ('../partials/menu') %>
+    <div class="container">
+        <div class="row flex-row">
+            <div class="col-md-5" style="margin:10px">
+                <div class="row d-flex">
+                    <div class="card flex-fill">
+                        <div class="card-header">
+                            <p class="h3 text-center">Number of Documents</p>
+                        </div>
+                        <div class="card-body align-content-center">
+                            <p class="h4 text-center">20</p>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="row d-flex">
+                    <div class="card flex-fill">
+                        <div class="card-header">
+                            <p class="h3 text-center">Number of Prompts</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="h4 text-center"> 19</p>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="row d-flex">
+                    <div class="card flex-fill">
+                        <div class="card-header">
+                            <p class="h3 text-center">Words Generated</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="h4 text-center">482</p>
+                        </div>
+                    </div>
+                </div>
+            </div> <!--first page column-->
+            <div class="col-md-5" style="margin:10px">
+                <div class="row d-flex">
+                    <div class="card flex-fill">
+                        <div class="card-header">
+                            <p class="h3 text-center">Username</p>
+                        </div>
+                        <div class="card-body">
+                            <p class="h4 text-center">User's name</p>
+                        </div>
+                    </div>
+                </div>
+
+                <br>
+                <div class="row d-flex justify-content-center">
+                    <button type="submit" class="btn btn-danger btn-lg" style="padding-left: 2.5rem; padding-right: 2.5rem;" onclick="location.href='Login'">Sign out</button>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+<%- include('../partials/footer') %>

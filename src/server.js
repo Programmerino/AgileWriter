@@ -39,5 +39,24 @@ app.get('/Generator', function(req, res) {
 	});
 });
 
+app.get('/Register', function(req, res) {
+	res.render('pages/user_reg',{
+		// pass variables to ejs here
+	});
+});
+
+app.get('/Account', function(reg, res) {
+	res.render('pages/user_account_page',{
+		// pass variables and stuff
+	});
+});
+
+app.get('/Login', function(reg, res) {
+	res.render('pages/user_login',{
+		// pass variables and stuff
+	});
+});
+
+
 app.listen(3000);
 console.log('3000 is the mAgIcAl PoRt~')
