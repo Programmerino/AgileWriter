@@ -54,5 +54,5 @@ services:
 # If you want to get rid of a hanging volume, e.g. to test your database init,
 # run `docker-compose rm -v`. Note that this will remove ALL of your data, so
 # be extra sure you've made a stable backup somewhere.
-# volumes:
-#   amazone-db: {}
+volumes:
+  amazone-db-img: {}
