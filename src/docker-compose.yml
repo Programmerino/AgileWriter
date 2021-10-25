@@ -20,11 +20,11 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: pwd
-      POSTGRES_DB: agilewriterdb
+      POSTGRES_DB: agile_db
     expose:
       - "5432" # We need only expose port `5432` internally to node (not the host)
     volumes:
-      - agilewriter-db:/var/lib/postgresql/data # Creates a docker managed volume to persist your data.
+      - amazone-db:/var/lib/postgresql/data # Creates a docker managed volume to persist your data.
       - ./init_data:/docker-entrypoint-initdb.d # Binds ./init_data to docker-entrypoint-initdb.d.
     #   The postgres image will run any files in this directory on startup,
     #   in our case the file `init_data/create.sql`
@@ -54,5 +54,5 @@ services:
 # If you want to get rid of a hanging volume, e.g. to test your database init,
 # run `docker-compose rm -v`. Note that this will remove ALL of your data, so
 # be extra sure you've made a stable backup somewhere.
-volumes:
-  agilewriter-db: {}
+# volumes:
+#   amazone-db: {}
