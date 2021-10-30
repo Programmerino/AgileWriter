@@ -28,43 +28,64 @@ app.use(passport.session());					// Link passport to session
 app.get('/', function(req, res) {
 	res.render('pages/home',{
 		// pass variables to ejs here
+		page_scripts: []
 	});
 });
 
 app.get('/Documents', checkNotAuthenticated, function(req, res) {
+	try {
+		pool.query(
+			`SELECT documents.*
+			FROM users WHERE username=$1
+			RIGHT JOIN documents ON id=user_id;`,
+			[username],
+			(err, results) =>
+			{
+				if (err) throw err;
+				else console.log(results.rows);
+			}
+		)
+	}
+	catch (err) { console.log("error"); console.log(err); }
 	res.render('pages/user_docs',{
 		// pass variables to ejs here
+		page_scripts: ["../../resources/js/docs.js"]
 	});
 });
 
 app.get('/Editor', checkNotAuthenticated, function(req, res) {
 	res.render('pages/word_processor',{
 		// pass variables to ejs here
+		page_scripts: []
 	});
 });
 
 app.get('/Generator', checkNotAuthenticated, function(req, res) {
 	res.render('pages/prompt_generator',{
 		// pass variables to ejs here
+		page_scripts: []
 	});
 });
 
 app.get('/Register', checkAuthenticated, function(req, res) {
 	res.render('pages/user_reg',{
 		// pass variables to ejs here
+		page_scripts: []
 	});
 });
 
 app.get('/Account', checkNotAuthenticated, function(req, res) {
 	res.render('pages/user_account_page',{
-		// pass variables and stuff
-		user: req.user.username
+		// pass variables to ejs here
+		user: req.user.username,
+		page_scripts: []
 	});
 });
 
 app.get('/Login', checkAuthenticated, function(req, res) {
 	res.render('pages/user_login',{
-		// pass variables and stuff
+		// pass variables to ejs here
+		page_scripts: []
 	});
 });
 
@@ -90,22 +111,27 @@ app.post('/Register', async (req, res)=>{
 
 		try {	
 			pool.query( //This query is used for checking to make sure that the username doesn't already exist in the psql table
-				`SELECT * FROM users WHERE username = $1;`, [username], (err, results) => {
+				`SELECT * FROM users WHERE username = $1;`, [username], (err, results) =>
+				{
 					if (err) throw err;
 					else if (results.rows.length > 0)
 					{	//This means the query returned a match for the username
 						errors.push({message: "Username already exists."});
-						res.render('pages/user_reg', {errors});
+						res.render('pages/user_reg', {
+							errors: errors,
+							page_scripts: []
+						});
 					}
 					else {
-						let created_on = new Date().toISOString().slice(0, 19).replace('T', ' ');
 						pool.query(
 							`INSERT INTO users (username, password, created_on) VALUES ($1, $2, $3) RETURNING id, password, created_on`,
-							[username, hashedPassword, created_on], (err, results) => {
+							[username, hashedPassword, new Date()], (err, results) => {
 								if (err) throw err;
 								else console.log(results.rows);
 								req.flash('success_msg', "You are now registered. Please login.");
-								res.render('pages/user_login');
+								res.render('pages/user_login', {
+									page_scripts: []
+								});
 							}
 						);
 					}
@@ -114,7 +140,10 @@ app.post('/Register', async (req, res)=>{
 		}
 		catch (err) { console.log("error"); next(err); }
 	}
-	else res.render('pages/user_reg',{errors});
+	else res.render('pages/user_reg',{
+		errors: errors,
+		page_scripts: []
+	});
 });
 
 app.post("/Login",passport.authenticate('local', {

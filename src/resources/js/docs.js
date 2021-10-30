@@ -2,7 +2,7 @@ function elementIsEmpty(el) {
     return (/^(\s|&nbsp;)*$/.test(el.innerHTML));
 }
 
-function createDocumentCard(parent_element, title){
+function createDocumentCard(target, title, link){
 	let container = document.createElement('div');
     let card = document.createElement('div');
     let card_body = document.createElement('div');
@@ -14,7 +14,7 @@ function createDocumentCard(parent_element, title){
     card_image.src = "../../resources/img/document.png";
     card_image.height = 150;
     card_image.width = 150;
-	card_link.href = "#";
+	card_link.href = link;
 	card_footer.innerText = title;
 
 	card.classList.add("card");
@@ -33,12 +33,16 @@ function createDocumentCard(parent_element, title){
 	card_link.appendChild(card_footer);
 	card.appendChild(card_link);
 	container.appendChild(card);
-    parent_element.insertBefore(container, parent_element.lastElementChild);
+    target.insertBefore(container, target.lastElementChild);
 }
 
 function createNewDocument() {
 	let document_window = document.getElementById("document_window");
-	createDocumentCard(document_window, "Untitled " + document_window.childElementCount);
+	createDocumentCard(document_window, "Untitled " + document_window.childElementCount, "#");
+}
+
+function loadDocuments() {
+	console.log(page_scripts);
 }
 
 function createNewFolder() {

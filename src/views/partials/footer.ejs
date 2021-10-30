@@ -20,7 +20,12 @@
 		integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
 		crossorigin="anonymous"
 	></script>
-	<!-- <script src="../resources/js/my_scripts.js"></script> -->
+	<%
+		let script_tags = '';
+		page_scripts.forEach(file => {
+			script_tags += '<script src="' + file + '"></script>' 
+		});
+	%>
+	<%- script_tags %>
 </body>
-</html>
 

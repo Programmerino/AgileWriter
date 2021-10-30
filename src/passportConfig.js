@@ -15,20 +15,22 @@ function initialize(passport){
                     console.log(err);
                 }
                 console.log(results.rows);
-                if(results.rows.length > 0){
+                if(results.rows.length > 0)
+				{
                     const user = results.rows[0];
-
-                    bcrypt.compare(userPassword, user.password, (err, isMatch)=>{
-                        if(err){
-                            console.log(err);
-                        }
-                        if(isMatch){
+                    bcrypt.compare(userPassword, user.password, (err, isMatch) =>
+					{
+                        if(err) console.log(err);
+                        else if(isMatch)
+						{;
+							pool.query(`UPDATE users SET last_login=$1 WHERE username=$2`, [new Date(), username])
                             return done(null, user);
-                        }else{
-                            return done(null, false, {message: "Password is not correct"});
                         }
+						else return done(null, false, {message: "Password is not correct"});
+                        
                     });
-                }else{
+                }
+				else{
                     return done(null, false, {message: "Username does not exist"});
                 }
             }
