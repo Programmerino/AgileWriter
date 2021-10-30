@@ -18,10 +18,14 @@ function createCard(parent_element, final_element){
 	card_footer.innerText = "Document 1";
 
 	card.classList.add("card");
+	card.classList.add("border-0");
+	card.classList.add("bg-transparent");
     card_body.classList.add("card-body");
     card_body.classList.add("text-center");
+	card_body.classList.add("bg-transparent");
     card_footer.classList.add("card-footer");
     card_footer.classList.add("text-center");
+	card_footer.classList.add("bg-transparent");
 	container.classList.add("col-auto");
 
 	card_body.appendChild(card_image);
@@ -29,53 +33,12 @@ function createCard(parent_element, final_element){
 	card_link.appendChild(card_footer);
 	card.appendChild(card_link);
 	container.appendChild(card);
-    // parent_element.insertBefore(container, parent_element.lastElementChild);
+    parent_element.insertBefore(container, parent_element.lastElementChild);
 }
 
 function createNewDocument() {
     var container = document.getElementById("document_window");
 	createCard(container);
-    // for(var i = 0; i < table.rows.length;i++) {
-    //     var row = table.rows[i];
-    //     for(var j = 0; j < 4; j++)
-	// 	{
-    //         if(j < 3 && row.cells[j] == undefined)
-	// 		{
-    //             var blankCell = document.createElement('td');
-    //             row.appendChild(blankCell);
-    //         }
-    //         col = row.cells[j];
-
-    //         if(elementIsEmpty(col))
-	// 		{
-	// 			createCard(col);
-				
-	// 			if(j == 3) {
-	// 				var newRow = document.createElement('tr');
-	// 				var newRowCell = document.createElement('td');
-	// 				newRow.appendChild(newRowCell);
-	// 				table.appendChild(newRow);
-	// 				return;
-	// 			}
-	// 			if(j<3) {
-	// 				var newRowCell = document.createElement('td');
-	// 				table.rows[i].appendChild(newRowCell);
-	// 				return;
-	// 			}
-	// 		}
-    //         if(!elementIsEmpty(col) && j == 3 && i == table.rows.length - 1)
-	// 		{
-	// 			var newRow = document.createElement('tr');
-	// 			var newRowCell = document.createElement('td');
-	// 			createNewCard(newRowCell);
-	// 			var newRowCellBlank = document.createElement('td');
-	// 			newRow.appendChild(newRowCell);
-	// 			newRow.appendChild(newRowCellBlank);
-	// 			table.appendChild(newRow);
-	// 			return;
-	// 		}      
-    //     }
-    // }
 }
 
 function createNewFolder() {
