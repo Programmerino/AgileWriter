@@ -2,7 +2,7 @@ function elementIsEmpty(el) {
     return (/^(\s|&nbsp;)*$/.test(el.innerHTML));
 }
 
-function createCard(parent_element, final_element){
+function createDocumentCard(parent_element, title){
 	let container = document.createElement('div');
     let card = document.createElement('div');
     let card_body = document.createElement('div');
@@ -15,7 +15,7 @@ function createCard(parent_element, final_element){
     card_image.height = 150;
     card_image.width = 150;
 	card_link.href = "#";
-	card_footer.innerText = "Document 1";
+	card_footer.innerText = title;
 
 	card.classList.add("card");
 	card.classList.add("border-0");
@@ -37,8 +37,8 @@ function createCard(parent_element, final_element){
 }
 
 function createNewDocument() {
-    var container = document.getElementById("document_window");
-	createCard(container);
+	let document_window = document.getElementById("document_window");
+	createDocumentCard(document_window, "Untitled " + document_window.childElementCount);
 }
 
 function createNewFolder() {
