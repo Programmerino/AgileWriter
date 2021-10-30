@@ -2,79 +2,80 @@ function elementIsEmpty(el) {
     return (/^(\s|&nbsp;)*$/.test(el.innerHTML));
 }
 
-function createNewCard(currCell){
-    var newCard = document.createElement('div');
-    var upperCard = document.createElement('div');
-    var upperCardClasses = upperCard.classList;
-    upperCardClasses.add("card-body");
-    upperCardClasses.add("text-center");
-    var upperCardImg = document.createElement('img');
-    upperCardImg.src = "https://static.thenounproject.com/png/859737-200.png";
-    upperCardImg.height = 150;
-    upperCardImg.width = 150;
-    upperCard.appendChild(upperCardImg);
+function createCard(parent_element, final_element){
+	let container = document.createElement('div');
+    let card = document.createElement('div');
+    let card_body = document.createElement('div');
+	let card_footer = document.createElement('div');
+    let card_image = document.createElement('img');
+	let card_link = document.createElement('a')
 
-    var lowerCard = document.createElement('div');
-    var lowerCardClasses = lowerCard.classList;
-    lowerCardClasses.add("card-footer");
-    lowerCardClasses.add("text-center");
-    var lowerCardLink = document.createElement('a');
-    lowerCardLink.href = "#";
-    lowerCardLink.innerText = "Document 1";
-    lowerCard.appendChild(lowerCardLink);
+	card.style.width = "200px";
+    card_image.src = "../../resources/img/document.png";
+    card_image.height = 150;
+    card_image.width = 150;
+	card_link.href = "#";
+	card_footer.innerText = "Document 1";
 
-    newCard.appendChild(upperCard);
-    newCard.appendChild(lowerCard);
-    var newCardClasses = newCard.classList;
-    newCardClasses.add("card");
+	card.classList.add("card");
+    card_body.classList.add("card-body");
+    card_body.classList.add("text-center");
+    card_footer.classList.add("card-footer");
+    card_footer.classList.add("text-center");
+	container.classList.add("col-auto");
 
-    currCell.appendChild(newCard);
+	card_body.appendChild(card_image);
+	card_link.appendChild(card_body);
+	card_link.appendChild(card_footer);
+	card.appendChild(card_link);
+	container.appendChild(card);
+    // parent_element.insertBefore(container, parent_element.lastElementChild);
 }
 
 function createNewDocument() {
-    console.log("hello");
-    var table = document.getElementById("curr_user_documents");
-    for(var i = 0; i < table.rows.length;i++) {
-        var row = table.rows[i];
-        for(var j = 0; j < 4; j++) {
-            if(j < 3 && row.cells[j] == undefined) {
-                var blankCell = document.createElement('td');
-                row.appendChild(blankCell);
-            }
-            col = row.cells[j];
+    var container = document.getElementById("document_window");
+	createCard(container);
+    // for(var i = 0; i < table.rows.length;i++) {
+    //     var row = table.rows[i];
+    //     for(var j = 0; j < 4; j++)
+	// 	{
+    //         if(j < 3 && row.cells[j] == undefined)
+	// 		{
+    //             var blankCell = document.createElement('td');
+    //             row.appendChild(blankCell);
+    //         }
+    //         col = row.cells[j];
 
-            if(elementIsEmpty(col))
-                {
-                    createNewCard(col);
-                    
-                    if(j == 3) {
-                        var newRow = document.createElement('tr');
-                        var newRowCell = document.createElement('td');
-                        newRow.appendChild(newRowCell);
-                        table.appendChild(newRow);
-                        return;
-                    }
-                    if(j<3) {
-                        var newRowCell = document.createElement('td');
-                        table.rows[i].appendChild(newRowCell);
-                        return;
-                    }
-                }
-                
-            if(!elementIsEmpty(col) && j == 3 && i == table.rows.length - 1)
-                {
-                    var newRow = document.createElement('tr');
-                    var newRowCell = document.createElement('td');
-                    createNewCard(newRowCell);
-                    var newRowCellBlank = document.createElement('td');
-                    newRow.appendChild(newRowCell);
-                    newRow.appendChild(newRowCellBlank);
-                    table.appendChild(newRow);
-                    return;
-                }
-                
-        }
-    }
+    //         if(elementIsEmpty(col))
+	// 		{
+	// 			createCard(col);
+				
+	// 			if(j == 3) {
+	// 				var newRow = document.createElement('tr');
+	// 				var newRowCell = document.createElement('td');
+	// 				newRow.appendChild(newRowCell);
+	// 				table.appendChild(newRow);
+	// 				return;
+	// 			}
+	// 			if(j<3) {
+	// 				var newRowCell = document.createElement('td');
+	// 				table.rows[i].appendChild(newRowCell);
+	// 				return;
+	// 			}
+	// 		}
+    //         if(!elementIsEmpty(col) && j == 3 && i == table.rows.length - 1)
+	// 		{
+	// 			var newRow = document.createElement('tr');
+	// 			var newRowCell = document.createElement('td');
+	// 			createNewCard(newRowCell);
+	// 			var newRowCellBlank = document.createElement('td');
+	// 			newRow.appendChild(newRowCell);
+	// 			newRow.appendChild(newRowCellBlank);
+	// 			table.appendChild(newRow);
+	// 			return;
+	// 		}      
+    //     }
+    // }
 }
 
 function createNewFolder() {

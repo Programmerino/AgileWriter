@@ -76,64 +76,45 @@ app.get('/Logout', (req,res)=>{
 
 app.post('/Register', async (req, res)=>{
 	let {username, userPassword, confPassword} = req.body; //get info from reg form
-	//console.log({username, userPassword, confPassword}); 
 	let errors = []; //This is used for putting errors associated with registration on the page
 
-	if(!username || !userPassword || !confPassword){
-		errors.push({message: "Please enter all fields."});
-	}
+	//console.log({username, userPassword, confPassword}); 
+	if(!username || !userPassword || !confPassword)	errors.push({message: "Please enter all fields."});
+	if(userPassword != confPassword)				errors.push({message: "Passwords do not match."});
+	if(userPassword.length < 5) 					errors.push({message: "Password must be at least 5 characters."});
+	
+	if(errors.length == 0 )
+	{
+		let hashedPassword = await bcrypt.hash(userPassword, 10); //Hashing passes
+		//console.log({username, userPassword, hashedPassword});
 
-	if(userPassword.length < 5){
-		errors.push({message: "Password must be at least 5 characters."});
-	}
-
-	if(userPassword != confPassword){
-		errors.push({message: "Passwords do not match."});
-	}
-
-	if(errors.length > 0)	{
-		res.render('pages/user_reg',{errors});
-		} else {
-			let hashedPassword = await bcrypt.hash(userPassword, 10); //Hashing passes
-			//console.log({username, userPassword, hashedPassword});
-
-			try {	
-				pool.query( //This query is used for checking to make sure that the username doesn't already exist in the psql table
-					`SELECT * FROM users WHERE username = $1;`, 
-					[username],
-					(err, results) => {
-						if (err) throw err;
-						//console.log("->Reaches Here<-");
-						//console.log(results.rows);
-						
-						if (results.rows.length > 0) { //This means the query returned a match for the username
-							errors.push({message: "Username already exists."});
-							res.render('pages/user_reg', {errors});
-						} else {
-							let created_on = new Date().toISOString().slice(0, 19).replace('T', ' ');
-							pool.query(
-								`INSERT INTO users (username, password, created_on)
-								VALUES ($1, $2, $3)
-								RETURNING id, password, created_on`,
-								[username, hashedPassword, created_on],
-								(err, results) => {
-									if (err){
-										throw err;
-									}
-									console.log(results.rows);
-									req.flash('success_msg', "You are now registered. Please login.");
-									res.render('pages/user_login');
-								}
-							)
-						}
+		try {	
+			pool.query( //This query is used for checking to make sure that the username doesn't already exist in the psql table
+				`SELECT * FROM users WHERE username = $1;`, [username], (err, results) => {
+					if (err) throw err;
+					else if (results.rows.length > 0)
+					{	//This means the query returned a match for the username
+						errors.push({message: "Username already exists."});
+						res.render('pages/user_reg', {errors});
 					}
-				);
-			}
-			catch (err){ //Just in case
-				console.log("error");
-				next(err);
-			}
+					else {
+						let created_on = new Date().toISOString().slice(0, 19).replace('T', ' ');
+						pool.query(
+							`INSERT INTO users (username, password, created_on) VALUES ($1, $2, $3) RETURNING id, password, created_on`,
+							[username, hashedPassword, created_on], (err, results) => {
+								if (err) throw err;
+								else console.log(results.rows);
+								req.flash('success_msg', "You are now registered. Please login.");
+								res.render('pages/user_login');
+							}
+						);
+					}
+				}
+			);
 		}
+		catch (err) { console.log("error"); next(err); }
+	}
+	else res.render('pages/user_reg',{errors});
 });
 
 app.post("/Login",passport.authenticate('local', {
@@ -143,16 +124,12 @@ app.post("/Login",passport.authenticate('local', {
 }));
 
 function checkAuthenticated(req,res,next){
-	if (req.isAuthenticated()){
-		return res.redirect('/Account');
-	}
+	if (req.isAuthenticated()) return res.redirect('/Account');
 	next();
 }
 
 function checkNotAuthenticated(req,res,next){
-	if(req.isAuthenticated()){
-		return next();
-	}
+	if(req.isAuthenticated()) return next();
 	res.redirect('/Login');
 }
 
