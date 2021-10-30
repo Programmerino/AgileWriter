@@ -1,9 +1,9 @@
 CREATE TABLE users(
 	id BIGSERIAL PRIMARY KEY NOT NULL,
 	username VARCHAR(50) UNIQUE NOT NULL,
-	password VARCHAR(50) NOT NULL,
-	created_on TIMESTAMP NOT NULL,
-	last_login TIMESTAMP
+	password VARCHAR(200) NOT NULL,
+	created_on TIMESTAMPTZ NOT NULL,
+	last_login TIMESTAMPTZ
 );
 
 CREATE TABLE documents(
@@ -15,8 +15,10 @@ CREATE TABLE documents(
 	CONSTRAINT unique_file UNIQUE (user_id, title, folder)
 );
 
+SET TIMEZONE = 'America/Denver';
+
 INSERT INTO users (username, password, created_on)
-VALUES ('admin', 'password', NOW()), ('lackey', 'password', NOW());
+VALUES ('admin', '', NOW()), ('lackey', '', NOW());
 
 INSERT INTO documents (user_id, title, folder, delta)
 SELECT id, title, folder, delta FROM users

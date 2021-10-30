@@ -1,46 +1,27 @@
-/***********************
-  Load Components!
+var express = require('express');			 			// A Node.js Framework
+var app = express();									// Build app using express
+var bodyParser = require('body-parser');			 	// A tool to help use parse the data in a post request
+const session = require('express-session');				// TODO: Add comment
+const flash = require('express-flash');					// TODO: Add comment
+const bcrypt = require("bcrypt");						// For encryption of passwords
+const passport = require("passport");					// For verifying
+const initializePassport = require("./passportConfig");	// Load passport config
+const {pool} = require("./dbConfig");					// Load database config
 
-  Express      - A Node.js Framework
-  Body-Parser  - A tool to help use parse the data in a post request
-  Pg-Promise   - A database tool to help use connect to our PostgreSQL database
-***********************/
-var express = require('express'); 					//Ensure our express framework has been added
-var app = express();
-
-const {pool} = require("./dbConfig");
-
-var bodyParser = require('body-parser'); 			//Ensure our body-parser tool has been added
-app.use(bodyParser.json());              			// support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
-
-const bcrypt = require("bcrypt"); //For encryption of passwords
-const session = require('express-session'); 
-const flash = require('express-flash');
-const passport = require("passport"); //For verifying that a user is signed in before accessing various pages
-
-
-
-app.set('view engine', 'ejs')
-
-
-app.use(express.static(__dirname + '/'));
-
-
-const initializePassport = require("./passportConfig");
 initializePassport(passport);
-
-
-app.use(session({
-	secret: 'secret', //Simpler placeholder for now, but secret key to encrypt session info
-	resave: false, 
-	saveUninitialized: false //Don't save session information if no information has been entered
+app.use(bodyParser.json());              				// support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); 	// support encoded bodies that a user is signed in before accessing various pages
+app.set('view engine', 'ejs')							// enable usage of ejs format over html 
+app.use(express.static(__dirname + '/'));				// set app directory
+app.use(session({										// Initialize session module
+	secret: 'cApItAlIsM$$$wIlL$$$bE$$$oUr$$$DoWnFaLl',	// Secret key to encrypt session info
+	resave: false, 										// TODO: Add comment
+	saveUninitialized: false 							// Don't save session information if no information has been entered
 }));
-app.use(flash()); //Display flash messages
-
-app.use(express.urlencoded({extended: false})); //I do not know if this conflicts with the above, although it seems not to
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(flash()); 								// Display flash messages
+app.use(express.urlencoded({extended: false}));	// I do not know if this conflicts with the above, although it seems not to
+app.use(passport.initialize());					// Initialize passport module
+app.use(passport.session());					// Link passport to session
 
 app.get('/', function(req, res) {
 	res.render('pages/home',{
@@ -122,15 +103,16 @@ app.post('/Register', async (req, res)=>{
 						if(err){throw err;}
 						//console.log("->Reaches Here<-");
 						//console.log(results.rows);
-
+						
+						let created_on = new Date().toISOString().slice(0, 19).replace('T', ' ');
 						if(results.rows.length > 0){ //This means the query returned a match for the username
 							errors.push({message: "Username already exists."});
 							res.render('pages/user_reg', {errors});
 						}else{
 							pool.query(
-								`INSERT INTO users (username, password)
-								VALUES ($1, $2)
-								RETURNING id, password`, [username, hashedPassword],
+								`INSERT INTO users (username, password, created_on)
+								VALUES ($1, $2, $3)
+								RETURNING id, password, created_on`, [username, hashedPassword, created_on],
 								(err, results) => {
 									if (err){
 										throw err;
