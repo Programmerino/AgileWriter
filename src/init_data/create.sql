@@ -18,17 +18,17 @@ CREATE TABLE documents(
 SET TIMEZONE = 'America/Denver';
 
 INSERT INTO users (username, password, created_on)
-VALUES ('admin', '', NOW()), ('lackey', '', NOW());
+VALUES ('test', '', NOW()), ('dummy', '', NOW());
 
 INSERT INTO documents (user_id, title, folder, delta)
 SELECT id, title, folder, delta FROM users
 RIGHT JOIN (VALUES
-	('admin', 'same document',		'jamesfolder', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}'),
-	('admin', 'yuhyuh',				'jamesfolder', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}'),
-	('admin', 'youknowthedrill',	'jamesfolder', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}'),
-	('admin', 'alldeezfiles',		'jamesfolder', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}'),
-	('admin', 'anotha one',			'jamesfolder', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}'),
-	('lackey', 'anotha one',		'jamesfolder', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}')
+	('test', 'same document', 'school', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}'),
+	('test', 'yuhyuh', 'school', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}'),
+	('test', 'youknowthedrill', 'work', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}'),
+	('test', 'alldeezfiles', 'personal', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}'),
+	('test', 'anotha one', 'personal', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}'),
+	('dummy', 'anotha one', 'personal', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}')
 ) AS doc (owner, title, folder, delta)
 ON owner = username;
 

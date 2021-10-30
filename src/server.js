@@ -23,6 +23,8 @@ app.use(express.urlencoded({extended: false}));	// I do not know if this conflic
 app.use(passport.initialize());					// Initialize passport module
 app.use(passport.session());					// Link passport to session
 
+
+
 app.get('/', function(req, res) {
 	res.render('pages/home',{
 		// pass variables to ejs here
@@ -99,20 +101,21 @@ app.post('/Register', async (req, res)=>{
 				pool.query( //This query is used for checking to make sure that the username doesn't already exist in the psql table
 					`SELECT * FROM users WHERE username = $1;`, 
 					[username],
-					(err, results)=>{
-						if(err){throw err;}
+					(err, results) => {
+						if (err) throw err;
 						//console.log("->Reaches Here<-");
 						//console.log(results.rows);
 						
-						let created_on = new Date().toISOString().slice(0, 19).replace('T', ' ');
-						if(results.rows.length > 0){ //This means the query returned a match for the username
+						if (results.rows.length > 0) { //This means the query returned a match for the username
 							errors.push({message: "Username already exists."});
 							res.render('pages/user_reg', {errors});
-						}else{
+						} else {
+							let created_on = new Date().toISOString().slice(0, 19).replace('T', ' ');
 							pool.query(
 								`INSERT INTO users (username, password, created_on)
 								VALUES ($1, $2, $3)
-								RETURNING id, password, created_on`, [username, hashedPassword, created_on],
+								RETURNING id, password, created_on`,
+								[username, hashedPassword, created_on],
 								(err, results) => {
 									if (err){
 										throw err;

@@ -56,5 +56,26 @@ function initialize(passport){
             }
         );
     });
+
+	try {
+		pool.query(
+			`SELECT * FROM users WHERE username = $1 OR username = $2`,
+			['test', 'dummy'],
+			(err, results) => {
+				if (err) throw err;
+				if (results.rows.length > 0) {
+					bcrypt.hash("password", 10, (err, hash) => {
+						if (err) throw err;
+						pool.query(
+							`UPDATE users SET password=$1 WHERE username = $2 OR username = $3`,
+							[hash, 'test', 'dummy'],
+							(err, results) => {if (err) throw err;}
+						)
+					});
+				}
+			}
+		)
+	}
+	catch(err) {console.log("ERROR:", err);;}
 }
 module.exports = initialize;
