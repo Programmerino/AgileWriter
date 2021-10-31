@@ -10,23 +10,44 @@
 						<h3>Present Directory</h3>
 					</div>
 					<div class="card-body">
-						<ul class="list-group list-group-flush" id="file_directory">
-							<a class="list-group-item list-group-item-action" href="">Documents</a>
-							<% let generateDirectory = function(directory) {
-								if (true) {
-									let sub_directory = '<ul class = "list-group list-group-flush">'
-									console.log(Object.keys(directory));
-									Object.keys(directory).forEach(folder => {
-										sub_directory += `<a class="list-group-item list-group-item-action" href="">${folder}</a>`
-									})
-									sub_directory += '</ul>';
-									return sub_directory;
+						<% let generateDirectory = function(directory, level) {
+							let show = (level < 2) ? ' show' : ''
+							let sub_folders = Object.keys(directory)
+							sub_folders.forEach(sub_folder => {
+								sub_folder_id = sub_folder.replace(/ /g, '___')
+								if (Object.keys(directory[sub_folder]).length)
+								{
+									let directory_element = `
+										<div class="accordian accordian-flush">
+											<div class="accordian-item">
+												<div class="accordian-header" id="${sub_folder_id}_directory">
+													<button class="accordion-button col py-2 ps-1" type="button" data-bs-toggle="collapse" data-bs-target="#${sub_folder_id}">
+														${sub_folder}
+													</button>
+												</div>
+												<div class="accordian-collapse collapse${show}" id="${sub_folder_id}">
+													<div class="accordian-body" style="padding-left:20px">`
+														%><%- directory_element %><%
+														generateDirectory(directory[sub_folder], level + 1)
+														directory_element = `
+													</div>
+												</div>
+											</div>
+										</div>`
+									%><%- directory_element %><%
 								}
-								else return '';
-							} %>
-							<% let directory_element = generateDirectory(user_folders); %>
-							<%- directory_element %>
-						</ul>
+								else {
+									let terminating_element = `
+										<ul class="list-group list-group-flush">
+											<button class="list-group-item text-start py-2 ps-0" type="button">
+												${sub_folder}
+											</button>
+										</ul>`
+									%><%- terminating_element %><%
+								}
+							});
+						} %>
+						<% generateDirectory(user_folders, 0); %>
 					</div>
 				</div>
 				<br>

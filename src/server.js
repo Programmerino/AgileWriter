@@ -44,17 +44,17 @@ app.get('/Documents', checkNotAuthenticated, function(req, res) {
 				WHERE username='${req.user.username}';`
 			),
 		postgres.query(`
-				SELECT ARRAY_AGG(DISTINCT folder)
-				FROM documents
-				WHERE user_id=${req.user.id}`
+				SELECT ARRAY_AGG(directory) AS root_directory
+				FROM file_directory
+				WHERE user_id=${req.user.id};`
 			)
 	])
 	.then((batch) => {
-		let file_system = {'root': {}}
-		batch[1].rows[0].array_agg.forEach(folder => {
+		let file_system = {'Documents': {}}
+		batch[1].rows[0].root_directory.forEach(folder => {
 			folder = folder.split('/');
 			let root = folder.shift();
-			let current_directory = file_system[root]
+			let current_directory = file_system['Documents']
 			if (root !== 'root') throw new Error(folder + "is not organized under root!")
 			else while (folder.length) {
 				let subfolder = folder.shift();
@@ -66,9 +66,11 @@ app.get('/Documents', checkNotAuthenticated, function(req, res) {
 			page_scripts: [
 				{src:'../../resources/js/docs.js'}
 			],
-			page_link_tags: [],
+			page_link_tags: [
+				{rel:'stylesheet', href:'../../resources/css/user_docs.css'}
+			],
 			user_docs: batch[0].rows,
-			user_folders: file_system['root']
+			user_folders: file_system
 		})
 	})
 	.catch(error => {
