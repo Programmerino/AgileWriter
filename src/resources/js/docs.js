@@ -2,7 +2,8 @@ function elementIsEmpty(el) {
     return (/^(\s|&nbsp;)*$/.test(el.innerHTML));
 }
 
-function createDocumentCard(target, title, link){
+function createDocumentCard(title, link){
+	let document_window = document.getElementById("document_window");
 	let container = document.createElement('div');
     let card = document.createElement('div');
     let card_body = document.createElement('div');
@@ -33,16 +34,11 @@ function createDocumentCard(target, title, link){
 	card_link.appendChild(card_footer);
 	card.appendChild(card_link);
 	container.appendChild(card);
-    target.insertBefore(container, target.lastElementChild);
+    document_window.insertBefore(container, document_window.lastElementChild);
 }
 
 function createNewDocument() {
-	let document_window = document.getElementById("document_window");
-	createDocumentCard(document_window, "Untitled " + document_window.childElementCount, "#");
-}
-
-function loadDocuments() {
-	console.log(page_scripts);
+	createDocumentCard("Untitled " + document_window.childElementCount, "#");
 }
 
 function createNewFolder() {

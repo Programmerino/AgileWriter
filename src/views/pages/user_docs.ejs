@@ -1,6 +1,4 @@
 <%- include ('../partials/header') %>
-</head>
-
 <body>
 	<%- include ('../partials/menu') %>
 	<div class="container-fluid">
@@ -13,9 +11,21 @@
 					</div>
 					<div class="card-body">
 						<ul class="list-group list-group-flush" id="file_directory">
-							<li class="list-group-item">
-								<a href="#">Documents</a>
-							</li>
+							<a class="list-group-item list-group-item-action" href="">Documents</a>
+							<% let generateDirectory = function(directory) {
+								if (true) {
+									let sub_directory = '<ul class = "list-group list-group-flush">'
+									console.log(Object.keys(directory));
+									Object.keys(directory).forEach(folder => {
+										sub_directory += `<a class="list-group-item list-group-item-action" href="">${folder}</a>`
+									})
+									sub_directory += '</ul>';
+									return sub_directory;
+								}
+								else return '';
+							} %>
+							<% let directory_element = generateDirectory(user_folders); %>
+							<%- directory_element %>
 						</ul>
 					</div>
 				</div>
@@ -41,6 +51,20 @@
 					</div>
 					<div class="container-fluid">
 						<div class="row"  id="document_window">
+							<% let documents = ''; %>
+							<% user_docs.forEach(document => {
+								documents += `
+								<div class="col-auto">
+									<a class="card bg-transparent border-0" href="#">
+										<div class="card-body bg-transparent text-center">
+											<img src="../../resources/img/document.png" width=150 height=150>
+										</div>
+										<div class="card-footer bg-transparent text-center">${document.title}</div>
+									</a>
+								</div>
+								`
+							}); %>
+							<%- documents %>
 							<div class="col"></div>
 						</div>
 					</div>
@@ -49,6 +73,8 @@
 			</div>
 		</div>
 	</div>
-<%- include('../partials/footer') %>
-
+</body>
+<footer>
+	<%- include('../partials/script_loader') %>
+</footer>
 </html>

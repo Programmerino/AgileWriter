@@ -1,13 +1,13 @@
 const LocalStrategy = require("passport-local").Strategy;
-const {pool} = require("./dbConfig");
+const {postgres} = require("./dbConfig");
 const bcrypt = require("bcrypt");
 
 
 
 function initialize(passport){
     const authenticateUser = (username, userPassword, done) =>{
-        console.log(username);
-        pool.query(
+        console.log("User <",username,"> is attempting to log in...");
+        postgres.query(
             `SELECT * FROM users WHERE username = $1`,
             [username],
             (err, results)=>{
@@ -22,8 +22,8 @@ function initialize(passport){
 					{
                         if(err) console.log(err);
                         else if(isMatch)
-						{;
-							pool.query(`UPDATE users SET last_login=$1 WHERE username=$2`, [new Date(), username])
+						{
+							postgres.query(`UPDATE users SET last_login=$1 WHERE username=$2`, [new Date(), username])
                             return done(null, user);
                         }
 						else return done(null, false, {message: "Password is not correct"});
@@ -48,7 +48,7 @@ function initialize(passport){
     passport.serializeUser((user,done)=> done(null, user.id));
 
     passport.deserializeUser((id, done)=>{
-        pool.query(
+        postgres.query(
             `SELECT * FROM users WHERE id = $1`, [id], 
             (err, results)=>{
                 if(err){
@@ -60,7 +60,7 @@ function initialize(passport){
     });
 
 	try {
-		pool.query(
+		postgres.query(
 			`SELECT * FROM users WHERE username = $1 OR username = $2`,
 			['test', 'dummy'],
 			(err, results) => {
@@ -68,7 +68,7 @@ function initialize(passport){
 				if (results.rows.length > 0) {
 					bcrypt.hash("password", 10, (err, hash) => {
 						if (err) throw err;
-						pool.query(
+						postgres.query(
 							`UPDATE users SET password=$1 WHERE username = $2 OR username = $3`,
 							[hash, 'test', 'dummy'],
 							(err, results) => {if (err) throw err;}

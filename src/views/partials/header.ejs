@@ -18,3 +18,16 @@
 		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
 		crossorigin="anonymous"
     />
+	<% let link_tags = ''; %>
+	<% page_link_tags.forEach(link_data => {
+		link_tags += `<link\n`
+		if (link_data.rel)					link_tags += `\t rel="${link_data.rel}"\n`
+		if (link_data.href)					link_tags += `\t href="${link_data.href}"\n`;
+		if (link_data.integrity)			link_tags += `\t integrity="${link_data.integrity}"\n`;
+		if (link_data.crossorigin === true)	link_tags += `\t crossorigin\n`;
+		else if (link_data.crossorigin)		link_tags += `\t crossorigin="${link_data.crossorigin}"\n`;
+		link_tags += `>\n`;
+	}); %>
+	<!-- console.log(link_tags); -->
+	<%- link_tags %>
+</head>
