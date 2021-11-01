@@ -30,17 +30,15 @@ app.get('/', function(req, res) {
 	res.render('pages/home', {
 		page_scripts: [],
 		page_link_tags: [
-			['stylesheet','../../resources/css/home.css']
+			['stylesheet','/resources/css/home.css']
 		]
 	});
 });
 
 app.get('/Documents*', checkNotAuthenticated, function(req, res) {
-	console.log(req.baseUrl);
 	let current = req.originalUrl.substring(1+req.originalUrl.lastIndexOf('/')).replace(/-/g,' ');
-	let path = req.originalUrl.replace("/Documents","root");
+	let path = req.originalUrl.replace("/Documents","root").replace(/-/g,' ');
 	let depth = (path.match(/\//g) || []).length + 1;
-	console.log(path);
 	
 	Promise.all([
 		postgres.query(`
@@ -82,22 +80,22 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 				current_directory = current_directory[subfolder];
 			}
 		});
-		batch[2].rows.forEach(path => {
-			let valid_path = path.directory.replace('root','').replace(/ /g,'-');
-			file_system_state[valid_path] = path.collapsed;
+		batch[2].rows.forEach(folder_path => {
+			let valid_path = folder_path.directory.replace('root','').replace(/ /g,'-');
+			file_system_state[valid_path] = folder_path.collapsed;
 		});
 		res.render('pages/user_docs', {
 			page_scripts: [
-				{src:'../../resources/js/docs.js'}
+				{src:'/resources/js/docs.js'}
 			],
 			page_link_tags: [
-				{rel:'stylesheet', href:'../../resources/css/user_docs.css'}
+				{rel:'stylesheet', href:'/resources/css/user_docs.css'}
 			],
 			user_docs: batch[0].rows,
 			user_folders: file_system,
 			dir_state: file_system_state,
 			dir_current: current,
-			dir_path: path.replace('root',''),
+			dir_path: path.replace('root','').replace(/ /g,'-'),
 			dir_depth: depth
 		})
 	})
@@ -126,7 +124,7 @@ app.get('/Editor', checkNotAuthenticated, function(req, res)  {
 	res.render('pages/word_processor', {
 		page_scripts: [ // Quill.js library
 			{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
-			{src:"../../resources/js/editor.js"},
+			{src:"/resources/js/editor.js"},
 			{	// Katex Library
 				src:"https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.js",
 				integrity:"sha384-GxNFqL3r9uRJQhR+47eDxuPoNE7yLftQM8LcxzgS4HT73tp970WS/wV5p8UzCOmb",
@@ -135,7 +133,7 @@ app.get('/Editor', checkNotAuthenticated, function(req, res)  {
 		],
 		page_link_tags: [
 			{rel:'stylesheet', href:'https://cdn.quilljs.com/1.3.6/quill.snow.css'},
-			{rel:'stylesheet', href:'../../resources/css/editor.css'},
+			{rel:'stylesheet', href:'/resources/css/editor.css'},
 			{rel:'preconnect', href:'https://fonts.googleapis.com'},
 			{rel:'preconnect', href:'https://fonts.gstatic.com', crossorigin:true},
 			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Abel&family=Amatic+SC&family=Andada+Pro&family=Anton&family=Bebas+Neue&family=Birthstone&family=Caveat&family=Crimson+Text&family=Dancing+Script&display=swap'},
@@ -149,7 +147,7 @@ app.get('/Editor', checkNotAuthenticated, function(req, res)  {
 app.get('/Generator', checkNotAuthenticated, function(req, res) {
 	res.render('pages/prompt_generator', {
 		page_scripts: [
-			{src:'../../resources/js/bundle.js',type:'text/javascript'}
+			{src:'/resources/js/bundle.js',type:'text/javascript'}
 		],
 		page_link_tags: [],
 	});

@@ -100,13 +100,20 @@
 								if (check != folder)
 								{
 									if (check[0] === '/') check = check.substring(1);
-									if (check && check == check.replace(/\//g,''))
+									if (check == check.replace(/\//g,''))
 									{
+										let folder_image = "/resources/img/folder.png";
+										if (!check) {
+											check = '...';
+											folder = folder.replace(dir_current.replace(/ /g,'-'),'');
+											folder = folder.substring(0,folder.length-1);
+											folder_image = "/resources/img/back_folder.png";
+										}
 										document_window += `
 										<div class="col-auto">
 											<a class="card bg-transparent border-0" href="/Documents${folder}" style="width:200px">
 												<div class="card-body bg-transparent text-center">
-													<img src="../../resources/img/folder.png" width=150 height=150>
+													<img src="${folder_image}" width=150 height=150>
 												</div>
 												<div class="card-footer bg-transparent text-center">${check}</div>
 											</a>
@@ -120,7 +127,7 @@
 								<div class="col-auto">
 									<a class="card bg-transparent border-0" href="#" style="width:200px">
 										<div class="card-body bg-transparent text-center">
-											<img src="../../resources/img/document.png" width=150 height=150>
+											<img src="/resources/img/document.png" width=150 height=150>
 										</div>
 										<div class="card-footer bg-transparent text-center">${document.title}</div>
 									</a>
