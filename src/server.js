@@ -162,9 +162,12 @@ app.get('/Register', checkAuthenticated, function(req, res) {
 
 app.get('/Account', checkNotAuthenticated, function(req, res) {
 	res.render('pages/user_account_page', {
-		user: req.user.username,
 		page_scripts: [],
-		page_link_tags: []
+		page_link_tags: [],
+		user: req.user.username,
+		count_user_docs: 0,
+		count_user_prompts: 0,
+		count_user_words: 1337
 	});
 });
 
