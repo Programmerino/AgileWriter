@@ -7,28 +7,47 @@
 			<div class="col-md-3 justify-content-center">
 				<div class="card">
 					<div class="card-header">
-						<h3>Present Directory</h3>
+						<h3>Directory</h3>
 					</div>
 					<div class="card-body">
-						<% let generateDirectory = function(directory, level) {
-							let show = (level < 2) ? ' show' : ''
+						<% let generateDirectory = function(directory, level, path) {
 							let sub_folders = Object.keys(directory)
 							sub_folders.forEach(sub_folder => {
-								sub_folder_id = sub_folder.replace(/ /g, '___')
+								let sub_folder_id = sub_folder.replace(/ /g, '-')
+								let sub_folder_path = level ? path + '/' + sub_folder_id : '';
+								let state = dir_state[sub_folder_path]
+								let show = (state) ? '' : ' show'
+								let hide = (state) ? ' collapsed' : ''
 								if (Object.keys(directory[sub_folder]).length)
 								{
 									let directory_element = `
 										<div class="accordian accordian-flush">
 											<div class="accordian-item">
 												<div class="accordian-header" id="${sub_folder_id}_directory">
-													<button class="accordion-button col py-2 ps-1" type="button" data-bs-toggle="collapse" data-bs-target="#${sub_folder_id}">
-														${sub_folder}
-													</button>
+													<div class="btn-group w-100" role="expand" aria-label="Expand directory">
+														<a
+															class="list-group-item list-group-item-action text-start w-100 border-0 ps-0"
+															type="button"
+															href="/Documents${sub_folder_path}"
+														>
+															${sub_folder}
+														</a>
+														<form action="/Documents/UpdateState" method="post">
+															<button
+																class="accordion-button${hide} w-auto py-2 px-1"
+																type="submit"
+																data-bs-toggle="collapse"
+																data-bs-target="#${sub_folder_id}"
+																name="folder"
+																value="${sub_folder_path}"
+															></button>
+														</form>
+													</div>
 												</div>
 												<div class="accordian-collapse collapse${show}" id="${sub_folder_id}">
 													<div class="accordian-body" style="padding-left:20px">`
 														%><%- directory_element %><%
-														generateDirectory(directory[sub_folder], level + 1)
+														generateDirectory(directory[sub_folder], level + 1, sub_folder_path)
 														directory_element = `
 													</div>
 												</div>
@@ -38,16 +57,18 @@
 								}
 								else {
 									let terminating_element = `
-										<ul class="list-group list-group-flush">
-											<button class="list-group-item text-start py-2 ps-0" type="button">
-												${sub_folder}
-											</button>
-										</ul>`
+										<a
+											class="list-group-item list-group-item-action text-start border-0 py-2 px-0"
+											type="button"
+											href="/Documents${sub_folder_path}"
+										>
+											${sub_folder}
+										</a>`
 									%><%- terminating_element %><%
 								}
 							});
 						} %>
-						<% generateDirectory(user_folders, 0); %>
+						<%  console.log(user_folders); generateDirectory(user_folders, 0, ''); %>
 					</div>
 				</div>
 				<br>
@@ -68,15 +89,15 @@
 			<div class="col">
 				<div class="flex-row bg-light">
 					<div class="card-header">
-						<h3>Present Folder</h3>
+						<h3><%= dir_current %></h3>
 					</div>
 					<div class="container-fluid">
 						<div class="row"  id="document_window">
-							<% let documents = ''; %>
+							<% let document_window = ''; %>
 							<% user_docs.forEach(document => {
-								documents += `
+								document_window += `
 								<div class="col-auto">
-									<a class="card bg-transparent border-0" href="#">
+									<a class="card bg-transparent border-0" href="#" style="width:200px">
 										<div class="card-body bg-transparent text-center">
 											<img src="../../resources/img/document.png" width=150 height=150>
 										</div>
@@ -85,7 +106,7 @@
 								</div>
 								`
 							}); %>
-							<%- documents %>
+							<%- document_window %>
 							<div class="col"></div>
 						</div>
 					</div>

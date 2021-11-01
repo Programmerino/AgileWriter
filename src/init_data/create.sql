@@ -10,6 +10,7 @@ CREATE TABLE users (
 CREATE TABLE file_directory (
 	user_id		BIGINT NOT NULL,
 	directory	VARCHAR(65536) NOT NULL,
+	collapsed	BOOLEAN DEFAULT TRUE,
 	PRIMARY KEY (user_id, directory),
 	FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE
 );
@@ -41,9 +42,11 @@ RIGHT JOIN (VALUES
 	('test', 'root/School/CSCI 3308/All these layers/Stop'),
 	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going'),
 	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please'),
-	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please/Secret Folder'),
-	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please/Secret Folder/Empty folder'),
+	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please/Please Stop'),
+	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please/Please Stop/Secret Folder'),
+	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please/Please Stop/Secret Folder/Empty folder'),
 	('test', 'root/Personal'),
+	('test', 'root/Personal/Work Life Balance'),
 	('test', 'root/Empty folder'),
 	('dummy', 'root'),
 	('dummy', 'root/Personal')

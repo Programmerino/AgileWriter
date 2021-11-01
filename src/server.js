@@ -6,7 +6,8 @@ const flash = require('express-flash');					// TODO: Add comment
 const bcrypt = require("bcrypt");						// For encryption of passwords
 const passport = require("passport");					// For verifying
 const initializePassport = require("./passportConfig");	// Load passport config
-const {postgres} = require("./dbConfig");					// Load database config
+const {postgres} = require("./dbConfig");				// Load database config
+const ROOT_DIR_NICKNAME = "My Documents";				// Determines nickname for root
 
 initializePassport(passport);
 app.use(bodyParser.json());              				// support json encoded bodies
@@ -34,33 +35,54 @@ app.get('/', function(req, res) {
 	});
 });
 
-app.get('/Documents', checkNotAuthenticated, function(req, res) {
+app.get('/Documents*', checkNotAuthenticated, function(req, res) {
+	let current = req.originalUrl.substring(1+req.originalUrl.lastIndexOf('/')).replace(/-/g,' ');
+	let path = req.originalUrl.replace("/Documents","root");
+	let depth = (path.match(/\//g) || []).length + 1;
 	Promise.all([
 		postgres.query(`
-				SELECT documents.*
-				FROM users
-				RIGHT JOIN documents
-				ON id=user_id
-				WHERE username='${req.user.username}';`
-			),
+			SELECT documents.*
+			FROM users
+			RIGHT JOIN documents
+			ON id=user_id
+			WHERE username='${req.user.username}'
+			AND folder='${path}';
+		`),
 		postgres.query(`
-				SELECT ARRAY_AGG(directory) AS root_directory
+			SELECT ARRAY_AGG(directory) AS root_directory
+			FROM (
+				SELECT directory
 				FROM file_directory
-				WHERE user_id=${req.user.id};`
-			)
+				WHERE user_id=${req.user.id}
+				GROUP BY directory
+				ORDER BY directory
+			) AS ordered_directory;
+		`),
+		postgres.query(`
+			SELECT directory, collapsed
+			FROM file_directory
+			WHERE user_id=${req.user.id};
+		`)
 	])
 	.then((batch) => {
-		let file_system = {'Documents': {}}
+		console.log(batch[1].rows);
+		let file_system = {}
+		let file_system_state = {}
+		file_system[ROOT_DIR_NICKNAME] = {}
 		batch[1].rows[0].root_directory.forEach(folder => {
 			folder = folder.split('/');
 			let root = folder.shift();
-			let current_directory = file_system['Documents']
+			let current_directory = file_system[ROOT_DIR_NICKNAME]
 			if (root !== 'root') throw new Error(folder + "is not organized under root!")
 			else while (folder.length) {
 				let subfolder = folder.shift();
 				current_directory[subfolder] = {};
 				current_directory = current_directory[subfolder];
 			}
+		});
+		batch[2].rows.forEach(path => {
+			let valid_path = path.directory.replace('root','').replace(/ /g,'-');
+			file_system_state[valid_path] = path.collapsed;
 		});
 		res.render('pages/user_docs', {
 			page_scripts: [
@@ -70,17 +92,31 @@ app.get('/Documents', checkNotAuthenticated, function(req, res) {
 				{rel:'stylesheet', href:'../../resources/css/user_docs.css'}
 			],
 			user_docs: batch[0].rows,
-			user_folders: file_system
+			user_folders: file_system,
+			dir_state: file_system_state,
+			dir_current: current,
+			dir_depth: depth
 		})
 	})
 	.catch(error => {
-		console.log(error.stack);
+		console.log(error);
 		res.render('pages/user_account_page', {
 			user: 'AN ERROR HAS OCCURED',
 			page_scripts: [],
 			page_link_tags: []
 		});
 	});
+});
+
+app.post('/Documents/UpdateState', function (req, res) {
+	let directory = "root" + req.body.folder.replace(/-/g," ");
+	postgres
+		.query(`
+			UPDATE file_directory
+			SET collapsed = NOT collapsed
+			WHERE directory='${directory}'
+		`)
+		.catch(err => console.log(err));
 });
 
 app.get('/Editor', checkNotAuthenticated, function(req, res)  {
