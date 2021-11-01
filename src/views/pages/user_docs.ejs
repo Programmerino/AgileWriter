@@ -68,7 +68,7 @@
 								}
 							});
 						} %>
-						<%  console.log(user_folders); generateDirectory(user_folders, 0, ''); %>
+						<%  generateDirectory(user_folders, 0, ''); %>
 					</div>
 				</div>
 				<br>
@@ -94,6 +94,27 @@
 					<div class="container-fluid">
 						<div class="row"  id="document_window">
 							<% let document_window = ''; %>
+							<% Object.keys(dir_state).forEach(folder => {
+								let ref_path = dir_path.length ? dir_path : '/'
+								let check = folder.replace(ref_path,'');
+								if (check != folder)
+								{
+									if (check[0] === '/') check = check.substring(1);
+									if (check && check == check.replace(/\//g,''))
+									{
+										document_window += `
+										<div class="col-auto">
+											<a class="card bg-transparent border-0" href="/Documents${folder}" style="width:200px">
+												<div class="card-body bg-transparent text-center">
+													<img src="../../resources/img/folder.png" width=150 height=150>
+												</div>
+												<div class="card-footer bg-transparent text-center">${check}</div>
+											</a>
+										</div>
+										`
+									}
+								}
+							}); %>
 							<% user_docs.forEach(document => {
 								document_window += `
 								<div class="col-auto">

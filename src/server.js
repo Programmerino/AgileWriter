@@ -36,9 +36,12 @@ app.get('/', function(req, res) {
 });
 
 app.get('/Documents*', checkNotAuthenticated, function(req, res) {
+	console.log(req.baseUrl);
 	let current = req.originalUrl.substring(1+req.originalUrl.lastIndexOf('/')).replace(/-/g,' ');
 	let path = req.originalUrl.replace("/Documents","root");
 	let depth = (path.match(/\//g) || []).length + 1;
+	console.log(path);
+	
 	Promise.all([
 		postgres.query(`
 			SELECT documents.*
@@ -65,7 +68,6 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 		`)
 	])
 	.then((batch) => {
-		console.log(batch[1].rows);
 		let file_system = {}
 		let file_system_state = {}
 		file_system[ROOT_DIR_NICKNAME] = {}
@@ -95,6 +97,7 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 			user_folders: file_system,
 			dir_state: file_system_state,
 			dir_current: current,
+			dir_path: path.replace('root',''),
 			dir_depth: depth
 		})
 	})
@@ -108,7 +111,7 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 	});
 });
 
-app.post('/Documents/UpdateState', function (req, res) {
+app.post('/Documents/UpdateState', checkNotAuthenticated, function (req, res) {
 	let directory = "root" + req.body.folder.replace(/-/g," ");
 	postgres
 		.query(`

@@ -12,7 +12,8 @@ CREATE TABLE file_directory (
 	directory	VARCHAR(65536) NOT NULL,
 	collapsed	BOOLEAN DEFAULT TRUE,
 	PRIMARY KEY (user_id, directory),
-	FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE
+	FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE,
+	CONSTRAINT reserved_name CHECK (directory <> 'root/UpdateState'),
 );
 
 CREATE TABLE documents (
@@ -44,7 +45,6 @@ RIGHT JOIN (VALUES
 	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please'),
 	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please/Please Stop'),
 	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please/Please Stop/Secret Folder'),
-	('test', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please/Please Stop/Secret Folder/Empty folder'),
 	('test', 'root/Personal'),
 	('test', 'root/Personal/Work Life Balance'),
 	('test', 'root/Empty folder'),
@@ -61,6 +61,7 @@ RIGHT JOIN (VALUES
 	('test', 'yuhyuh', 'root/School', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}',		 NOW()),
 	('test', 'youknowthedrill', 'root/School/CSCI 3308', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}', NOW()),
 	('test', 'alldeezfiles', 'root/Personal', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}',NOW()),
+	('test', 'porn', 'root/School/CSCI 3308/All these layers/Stop/Dont keep going/Please/Please Stop/Secret Folder', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}',NOW()),
 	('test', 'anotha one', 'root/Personal', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}',	 NOW()),
 	('dummy', 'anotha one', 'root/Personal', '{{"ops": [{"insert": "Gandalf the Grey\n"}]}}', NOW())
 ) AS doc (owner, title, folder, delta, created)
