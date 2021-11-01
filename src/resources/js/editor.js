@@ -15,6 +15,9 @@ function loadEditor() {
     document.getElementsByClassName('ql-align')[0].firstElementChild.style.paddingTop='0px'
     // const bold = document.getElementsByClassName('ql-bold')[0].parentNode
     // bold.parentNode.insertBefore(document.createElement('BR'),bold)
+	let loaded_delta = JSON.parse(document.getElementById('editor').firstElementChild.firstElementChild.innerHTML);
+	console.log(loaded_delta);
+	editor.setContents(loaded_delta);
 }
 
 var editor = new Quill('#editor', {

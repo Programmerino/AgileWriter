@@ -125,12 +125,20 @@
 							<% user_docs.forEach(document => {
 								document_window += `
 								<div class="col-auto">
-									<a class="card bg-transparent border-0" href="#" style="width:200px">
-										<div class="card-body bg-transparent text-center">
-											<img src="/resources/img/document.png" width=150 height=150>
-										</div>
-										<div class="card-footer bg-transparent text-center">${document.title}</div>
-									</a>
+									<form action="/Editor/LoadDocument" method="post">
+										<button
+											class="card bg-transparent border-0"
+											style="width:200px"
+											type="submit"
+											name="file"
+											value="root${dir_path.replace(/-/g,' ')}/${document.title}"
+										>
+											<div class="card-body bg-transparent text-center">
+												<img src="/resources/img/document.png" width=150 height=150>
+											</div>
+											<div class="card-footer bg-transparent text-center">${document.title}</div>
+										</button>
+									</form>
 								</div>
 								`
 							}); %>

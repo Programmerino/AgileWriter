@@ -62,7 +62,14 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 		postgres.query(`
 			SELECT directory, collapsed
 			FROM file_directory
-			WHERE user_id=${req.user.id};
+			WHERE user_id=${req.user.id}
+			ORDER BY directory;
+		`),
+		postgres.query(`
+			SELECT user_id, directory
+			FROM file_directory
+			WHERE user_id=${req.user.id}
+			AND hash_id='UNINITIALIZED';
 		`)
 	])
 	.then((batch) => {
@@ -98,13 +105,30 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 			dir_path: path.replace('root','').replace(/ /g,'-'),
 			dir_depth: depth
 		})
+		batch[3].rows.forEach(folder => {
+			bcrypt
+				.hash(folder.directory, 1)
+				.then((hash, err) => {
+					let replace_letter = String.fromCharCode(65+Math.floor(Math.random()*25.99))
+					hash = hash.replace(/[\$\/\.\\\(\)]/g,replace_letter);
+					postgres.query(`
+					UPDATE file_directory
+					SET hash_id='${hash}'
+					WHERE user_id=${req.user.id}
+					AND directory='${folder.directory}'
+				`)})
+				.catch(err => console.log(err));
+		})
 	})
 	.catch(error => {
 		console.log(error);
 		res.render('pages/user_account_page', {
-			user: 'AN ERROR HAS OCCURED',
+			user: 'AN ERROR HAS OCCURRED',
 			page_scripts: [],
-			page_link_tags: []
+			page_link_tags: [],
+			count_user_docs: 0,
+			count_user_prompts: 0,
+			count_user_words: 1337
 		});
 	});
 });
@@ -120,7 +144,7 @@ app.post('/Documents/UpdateState', checkNotAuthenticated, function (req, res) {
 		.catch(err => console.log(err));
 });
 
-app.get('/Editor', checkNotAuthenticated, function(req, res)  {
+app.get('/Editor', checkNotAuthenticated, function(req, res) {
 	res.render('pages/word_processor', {
 		page_scripts: [ // Quill.js library
 			{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
@@ -140,8 +164,80 @@ app.get('/Editor', checkNotAuthenticated, function(req, res)  {
 			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Dosis&family=Ephesis&family=Explora&family=Festive&family=Gluten&family=Heebo&family=Henny+Penny&family=Inconsolata&family=Indie+Flower&family=Josefin+Sans&display=swap'},
 			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
 			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
-		]
+		],
+		document_delta: ''
 	});
+});
+
+app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
+	try {
+		postgres.query(`
+			SELECT directory
+			FROM file_directory
+			WHERE user_id=${req.user.id}
+			AND hash_id='${req.params.folder}';
+		`)
+		.then((results, err) => {
+			postgres.query(`
+				SELECT delta
+				FROM documents
+				WHERE user_id=${req.user.id}
+				AND folder='${results.rows[0].directory}'
+				AND title='${req.params.file}';
+			`)
+			.then((results, err) => {
+				res.render('pages/word_processor', {
+					page_scripts: [ // Quill.js library
+						{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
+						{src:"/resources/js/editor.js"},
+						{	// Katex Library
+							src:"https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.js",
+							integrity:"sha384-GxNFqL3r9uRJQhR+47eDxuPoNE7yLftQM8LcxzgS4HT73tp970WS/wV5p8UzCOmb",
+							crossorigin:"anonymous"
+						}
+					],
+					page_link_tags: [
+						{rel:'stylesheet', href:'https://cdn.quilljs.com/1.3.6/quill.snow.css'},
+						{rel:'stylesheet', href:'/resources/css/editor.css'},
+						{rel:'preconnect', href:'https://fonts.googleapis.com'},
+						{rel:'preconnect', href:'https://fonts.gstatic.com', crossorigin:true},
+						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Abel&family=Amatic+SC&family=Andada+Pro&family=Anton&family=Bebas+Neue&family=Birthstone&family=Caveat&family=Crimson+Text&family=Dancing+Script&display=swap'},
+						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Dosis&family=Ephesis&family=Explora&family=Festive&family=Gluten&family=Heebo&family=Henny+Penny&family=Inconsolata&family=Indie+Flower&family=Josefin+Sans&display=swap'},
+						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
+						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
+					],
+					document_delta: JSON.stringify(results.rows[0].delta)
+				});
+			})
+		})
+	}
+	catch(error) {
+		console.log(error);
+		res.render('pages/user_account_page', {
+			user: 'AN ERROR HAS OCCURRED',
+			page_scripts: [],
+			page_link_tags: [],
+			count_user_docs: 0,
+			count_user_prompts: 0,
+			count_user_words: 1337
+		});
+	};
+});
+
+app.post('/Editor/LoadDocument', checkNotAuthenticated, function(req, res) {
+	let delimiter = req.body.file.lastIndexOf('/');
+	let path = req.body.file.substring(0,delimiter);
+	let file = req.body.file.substring(delimiter+1);
+	postgres.query(`
+		SELECT hash_id
+		FROM file_directory
+		WHERE user_id=${req.user.id}
+		AND directory='${path}';
+	`)
+	.then((results, err) => {
+		let folder_id = results.rows[0].hash_id;
+		res.redirect(`/Editor/${folder_id}/${file}`)
+	})
 });
 
 app.get('/Generator', checkNotAuthenticated, function(req, res) {
@@ -161,14 +257,34 @@ app.get('/Register', checkAuthenticated, function(req, res) {
 });
 
 app.get('/Account', checkNotAuthenticated, function(req, res) {
-	res.render('pages/user_account_page', {
-		page_scripts: [],
-		page_link_tags: [],
-		user: req.user.username,
-		count_user_docs: 0,
-		count_user_prompts: 0,
-		count_user_words: 1337
-	});
+	postgres
+		.query(`
+			SELECT COUNT(*)
+			FROM documents
+			WHERE user_id=${req.user.id};
+		`)
+		.then((results, err) => {
+			if (err) console.log(err)
+			else res.render('pages/user_account_page', {
+				user: req.user.username,
+				page_scripts: [],
+				page_link_tags: [],
+				count_user_docs: results.rows[0].count,
+				count_user_prompts: 0,
+				count_user_words: 1337
+			});
+		})
+		.catch(error => {
+			console.log(error);
+			res.render('pages/user_account_page', {
+				user: 'AN ERROR HAS OCCURRED',
+				page_scripts: [],
+				page_link_tags: [],
+				count_user_docs: 0,
+				count_user_prompts: 0,
+				count_user_words: 1337
+			});
+		});
 });
 
 app.get('/Login', checkAuthenticated, function(req, res) {

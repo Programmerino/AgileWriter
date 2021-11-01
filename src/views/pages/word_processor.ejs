@@ -4,9 +4,14 @@
 	<%- include ('../partials/menu') %>
 	<div class="container mt-3">
 		<div id="editor">
-			<p>Hello World!</p>
-			<p>Some initial <strong>bold</strong> text</p>
-			<p><br></p>
+			<% if (!document_delta) document_delta = `{"ops":[
+				{"attributes":{"color":"#e60000","size":"20px"},"insert":"Hello world!"},
+				{"insert":"\\nSome initial "},
+				{"attributes":{"bold":true},"insert":"bold"},
+				{"insert":" text\\n\\n"
+			
+			}]}` %>
+			<%- document_delta %>
 		</div>
 	</div>
 </body>
