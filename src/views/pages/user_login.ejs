@@ -30,10 +30,18 @@
 				</div>
 		
 				<div class="text-center text-lg-start mt-4 pt-2">
-					<button type="submit" value="/Login" class="btn btn-danger btn-lg"
-					style="padding-left: 2.5rem; padding-right: 2.5rem;"">Login</button>
-					<p class="small fw-bold mt-2 pt-1 mb-0">Don't have an account? <a href="Register"
-						style="color:red">Register</a></p>
+					<button
+						type="submit"
+						id="login-button"
+						value="/Login"
+						class="btn btn-danger btn-lg"
+						style="padding-left: 2.5rem; padding-right: 2.5rem;""
+					>Login</button>
+					<p class="small fw-bold mt-2 pt-1 mb-0">Don't have an account?</p>
+					<p class="small fw-bold mt-0 pt-1 mb-0">
+						<a class="me-2" href="Register" style="color:red">Register</a>
+						<a class="ms-2" type="button" style="color:red;" onclick="loginAsTestUser()"><u>Login as Test User</u></a>
+					</p>
 				</div>
 		
 				</form>

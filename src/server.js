@@ -170,7 +170,9 @@ app.get('/Account', checkNotAuthenticated, function(req, res) {
 
 app.get('/Login', checkAuthenticated, function(req, res) {
 	res.render('pages/user_login', {
-		page_scripts: [],
+		page_scripts: [
+			{src:"/resources/js/test_login.js"}
+		],
 		page_link_tags: []
 	});
 });

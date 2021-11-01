@@ -12,7 +12,7 @@ function createDocumentCard(title, link){
 	let card_link = document.createElement('a')
 
 	card.style.width = "200px";
-    card_image.src = "../../resources/img/document.png";
+    card_image.src = "/resources/img/document.png";
     card_image.height = 150;
     card_image.width = 150;
 	card_link.href = link;
