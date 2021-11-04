@@ -35,11 +35,13 @@ app.get('/', function(req, res) {
 	});
 });
 
+
 app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 	let current = req.originalUrl.substring(1+req.originalUrl.lastIndexOf('/')).replace(/-/g,' ');
 	let path = req.originalUrl.replace("/Documents","root").replace(/-/g,' ');
 	let depth = (path.match(/\//g) || []).length + 1;
 	
+
 	Promise.all([
 		postgres.query(`
 			SELECT documents.*
@@ -206,6 +208,7 @@ app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
 						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
 						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
 					],
+					document_title: req.params.file,
 					document_delta: JSON.stringify(results.rows[0].delta)
 				});
 			})

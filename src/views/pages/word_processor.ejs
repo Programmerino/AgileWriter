@@ -2,18 +2,72 @@
 
 <body id="content" onload="loadEditor()">
 	<%- include ('../partials/menu') %>
-	<div class="container mt-3">
-		<div id="editor">
-			<% if (!document_delta) document_delta = `{"ops":[
-				{"attributes":{"color":"#e60000","size":"20px"},"insert":"Hello world!"},
-				{"insert":"\\nSome initial "},
-				{"attributes":{"bold":true},"insert":"bold"},
-				{"insert":" text\\n\\n"
-			
-			}]}` %>
-			<%- document_delta %>
+	<div class="container mt-3 flex-row">
+		<div class="row">
+			<div class="col-lg-auto" style="width:75%">
+				<div class="row" style="width:50%; margin:0px;">
+					<% if(!document_delta) { %>
+						<input id="docTitle" name="docTitle" type="text" placeholder="Title your document..." contents="">
+					<% } else { %>
+						<h2 id="docTitle" class="h2"><%=document_title%></h1>
+					<%}%>
+				</div>
+				<br>
+				<div style="width:100%; height:350px;" id="editor" class="overflow-auto">
+					
+					<% if (!document_delta) document_delta = `{"ops":[
+						{"attributes":{"color":"#e60000","size":"20px"},"insert":"Hello world!"},
+						{"insert":"\\nSome initial "},
+						{"attributes":{"bold":true},"insert":"bold"},
+						{"insert":" text\\n\\n"
+					
+					}]}` %>
+					<%- document_delta %>
+				</div>
+				<br>
+				<div class="row d-flex">
+					<div class="col-auto">
+						<button class="btn btn-danger btn-lg" type="submit" value="/Editor/SaveDocument/">Save Document</button>
+					</div>
+					
+				</div>
+			</div> <!--col-->
+			<div class="col-sm">
+				<div class="flex-row">
+					<table class="table">
+						<thead style="background-color: red; color:white;"><tr><td><p class="h4" style="margin:5px">Generate a new...</p></td></d></tr></thead>
+						<tr>
+							<td>
+							<form method="POST" action="">
+								<button class="card bg-transparent border-0" type="submit" value="sentence" name="genType">Sentence (NONFUNCTIONAL)</button>
+							</form>
+							</td>
+						</tr>
+						<tr>
+							<td>
+							<form method="POST" action="">
+								<button class="card bg-transparent border-0" type="submit" value="paragraph" name="genType">Paragraph (NONFUNCTIONAL)</button>
+							</form>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div class="flex-row overflow-auto">
+					<table class="table">
+						<thead style="background-color: red; color:white; border:0"><tr><td><p class="h4" style="margin:5px">Basic Document Statistics:</p></td></d></tr></thead>
+						<tr><td>Date created: </td></tr>
+						<tr><td>Word count: </td></tr>
+						<tr><td>Sentence count: </td></tr>
+						<tr><td>Auto-generations: </td></tr>
+						<tr><td>Rough page count: </td></tr>
+					</table>
+				</div>
+			</div>
 		</div>
-	</div>
+		
+
+	</div> 
+	
 </body>
 <footer>
 <%- include('../partials/script_loader') %>
