@@ -245,12 +245,24 @@ app.post('/Editor/LoadDocument', checkNotAuthenticated, function(req, res) {
 	})
 });
 
+function simpleParseSingleQuote(doc){
+	var newDoc = "";
+	let quoteCounter = [];
+	for(let i = 0; i < doc.length; i++){
+		if(doc[i] == "'"){
+			newDoc += "'";
+		}
+		newDoc += doc[i];
+	}
+	return newDoc;
+}
+
 app.post('/Editor/SaveDocument', checkNotAuthenticated, (req,res)=>{
 	let{documentContents, documentTitle, documentDirectory} = req.body;
 	
 	//This is working, remember, you also have to hit the save button to make server side consolelogging happen
 	//var test = JSON.stringify(documentContents);
-	
+	documentContents = simpleParseSingleQuote(documentContents);
 	//console.log(documentContents);
 	documentContentsJSON = JSON.parse(documentContents);
 	//console.log(documentTitle);
