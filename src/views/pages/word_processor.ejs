@@ -6,29 +6,52 @@
 		<div class="row">
 			<div class="col-lg-auto" style="width:75%">
 				<div class="row" style="width:50%; margin:0px;">
-					<% if(!document_delta) { %>
+					<% if(!document_delta) { %> <!--If this is a fresh editor-->
 						<input id="docTitle" name="docTitle" type="text" placeholder="Title your document..." contents="">
-					<% } else { %>
+					<% } else { %> <!--If this is a document being loaded-->
 						<h2 id="docTitle" class="h2"><%=document_title%></h1>
 					<%}%>
 				</div>
 				<br>
 				<div style="width:100%; height:350px;" id="editor" class="overflow-auto">
-					
-					<% if (!document_delta) document_delta = `{"ops":[
+					<% let docTrue = true;%>
+					<% if (!document_delta) { 
+						document_delta = `{"ops":[
 						{"attributes":{"color":"#e60000","size":"20px"},"insert":"Hello world!"},
 						{"insert":"\\nSome initial "},
 						{"attributes":{"bold":true},"insert":"bold"},
 						{"insert":" text\\n\\n"
-					
-					}]}` %>
+						}]}`
+						docTrue = false;
+						}
+						%>
 					<%- document_delta %>
 				</div>
 				<br>
 				<div class="row d-flex">
-					<div class="col-auto">
-						<button class="btn btn-danger btn-lg" type="submit" value="/Editor/SaveDocument/">Save Document</button>
+					<div class="col-auto justify-content-center">
+						
+						<% if(docTrue) { %> <!--This is the form for updating an already saved document-->
+							<form method="POST" action="/Editor/SaveDocument">
+								<input id="documentContents" name="documentContents" hidden value="">
+								<input id="documentTitle" name="documentTitle" hidden value="">
+								<input id="documentDirectory" name="documentDirectory" hidden value="">
+								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Push Document</button>
+								<button class="btn btn-danger btn-lg" type="submit" value="/Editor/SaveDocument">Save Document</button>
+								<p id="docDirec" name="docDirec" class="lead text-truncate"><%=document_directory%></p>
+							</form>
+						<% }else{ %> <!--Separate form for a new document being saved-->
+							<form method="POST" action="/Editor/SaveDocument">
+								<input id="documentContents" name="documentContents" hidden value="">
+								<input id="documentTitle" name="documentTitle" hidden value="">
+								<input id="documentDirectory" name="documentDirectory" hidden value="">
+								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Push Document</button>
+								<button class="btn btn-danger btn-lg" type="submit" value="/Editor/SaveDocument">Save Document</button>
+								<p class="lead">No folder chosen</p>
+							</form>
+						<% } %>
 					</div>
+					
 					
 				</div>
 			</div> <!--col-->
@@ -47,6 +70,7 @@
 							<td>
 							<form method="POST" action="">
 								<button class="card bg-transparent border-0" type="submit" value="paragraph" name="genType">Paragraph (NONFUNCTIONAL)</button>
+								
 							</form>
 							</td>
 						</tr>
@@ -71,5 +95,6 @@
 </body>
 <footer>
 <%- include('../partials/script_loader') %>
+<script src="../../resources/js/editor.js"></script>
 </footer>
 </html>

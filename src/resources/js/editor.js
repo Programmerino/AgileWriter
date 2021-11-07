@@ -16,8 +16,28 @@ function loadEditor() {
     // const bold = document.getElementsByClassName('ql-bold')[0].parentNode
     // bold.parentNode.insertBefore(document.createElement('BR'),bold)
 	let loaded_delta = JSON.parse(document.getElementById('editor').firstElementChild.firstElementChild.innerHTML);
-	console.log(loaded_delta);
+	//console.log(loaded_delta);
 	editor.setContents(loaded_delta);
+}
+
+function getDocument() {
+    console.log("Hello there!!!!!!");
+    //var editor = document.getElementById("editor");
+    var contents = editor.getContents();
+    var stringContents = JSON.stringify(contents);
+    console.log(stringContents);
+    document.getElementById("documentContents").setAttribute("value", stringContents);
+
+    //This will need to be loaded into some kind of conglomerate button with the submitting of the form.
+    var title = document.getElementById("docTitle").value;
+    if(!title) {
+        title = document.getElementById("docTitle").innerHTML;
+    }
+    console.log(title);
+    document.getElementById("documentTitle").setAttribute("value", title);
+
+    var directory = document.getElementById("docDirec").innerHTML;
+    document.getElementById("documentDirectory").setAttribute("value", directory);
 }
 
 var editor = new Quill('#editor', {
@@ -59,3 +79,5 @@ var editor = new Quill('#editor', {
         ]
     }
 });
+
+modules.export(getDocument());

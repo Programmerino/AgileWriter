@@ -180,6 +180,7 @@ app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
 			AND hash_id='${req.params.folder}';
 		`)
 		.then((results, err) => {
+			let fileDirec = results.rows[0].directory;
 			postgres.query(`
 				SELECT delta
 				FROM documents
@@ -208,6 +209,7 @@ app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
 						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
 						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
 					],
+					document_directory: fileDirec,
 					document_title: req.params.file,
 					document_delta: JSON.stringify(results.rows[0].delta)
 				});
@@ -241,6 +243,43 @@ app.post('/Editor/LoadDocument', checkNotAuthenticated, function(req, res) {
 		let folder_id = results.rows[0].hash_id;
 		res.redirect(`/Editor/${folder_id}/${file}`)
 	})
+});
+
+app.post('/Editor/SaveDocument', checkNotAuthenticated, (req,res)=>{
+	let{documentContents, documentTitle, documentDirectory} = req.body;
+	
+	//This is working, remember, you also have to hit the save button to make server side consolelogging happen
+	//var test = JSON.stringify(documentContents);
+	
+	//console.log(documentContents);
+	documentContentsJSON = JSON.parse(documentContents);
+	//console.log(documentTitle);
+	//console.log(documentDirectory);
+	postgres.query(`SELECT * FROM documents WHERE title='${documentTitle}' AND user_id='${req.user.id}';`)
+	.then((results,err) => {
+		if(results.rows.length) { //If the user is editing a previously saved document
+			postgres.query(`UPDATE documents SET delta = '${documentContents}'::jsonb
+							WHERE title='${documentTitle}' AND user_id='${req.user.id}'`)
+			.then((results,err)=>{
+				res.redirect("/Documents");
+			})
+			
+		}else{ //If a user is inserting a brand new document
+			postgres.query(`INSERT INTO documents (user_id, folder, title, delta, created)
+							SELECT id, folder, title, delta, created FROM users
+							RIGHT JOIN (VALUES
+								('${req.user.username}', '${documentTitle}', 'root', '${documentContents}'::jsonb, NOW())
+							) AS doc (owner, title, folder, delta, created)
+							ON owner = username;`)
+							.then((results,err)=>{
+								res.redirect("/Documents");
+							}) //For the insert statement I used what was similar to the create.sql
+		}
+	})
+
+	
+	
+	
 });
 
 app.get('/Generator', checkNotAuthenticated, function(req, res) {
@@ -312,15 +351,18 @@ app.post('/Register', async (req, res)=>{
 	if(userPassword != confPassword)				errors.push({message: "Passwords do not match."});
 	if(userPassword.length < 5) 					errors.push({message: "Password must be at least 5 characters."});
 	
+	console.log(username);
+	console.log(userPassword);
+
 	if (!errors.length) {
 		let hashedPassword = await bcrypt.hash(userPassword, 10); //Hashing passes
-
+		console.log("HELLLLLO THEREEEEEEEEE1");
 		//This query is used for checking to make sure that the username doesn't already exist in the psql table
-		postgres	
-			.query(`SELECT * FROM users WHERE username = ${username};`)
-			.then((err, results) => {
+		postgres.query(`SELECT * FROM users WHERE username='${username}';`)
+			.then((results, err) => {
 				if (err) console.log(err);
-				else if (results.rows.length) {	//This means the query returned a match for the username
+				if (results.rows.length) {	//This means the query returned a match for the username
+					console.log("HELLLLLO THEREEEEEEEEE2");
 					errors.push({message: "Username already exists."});
 					res.render('pages/user_reg', {
 						errors: errors,
@@ -328,6 +370,7 @@ app.post('/Register', async (req, res)=>{
 						page_link_tags: []
 					});
 				}
+				
 				else postgres.query(`
 						INSERT INTO users (username, password, created_on) 
 						VALUES ($1, $2, $3)
@@ -335,13 +378,25 @@ app.post('/Register', async (req, res)=>{
 						[username, hashedPassword, new Date()]
 					)
 					.then((err, results) => {
-							if (err) throw err;
-							else console.log(results.rows);
-							req.flash('success_msg', "You are now registered. Please login.");
-							res.render('pages/user_login', {
-								page_scripts: [],
-								page_link_tags: []
-							});
+							postgres.query(`
+							INSERT INTO file_directory (user_id, directory)
+							SELECT id, folder FROM users
+							RIGHT JOIN (VALUES 
+								('${username}', 'root'),
+								('${username}', 'root/Personal')
+							) AS dir (owner, folder)
+							ON owner = username;`)
+							.then((results,err)=>{
+								console.log("HELLLLLO THEREEEEEEEEE3");
+								if (err) throw err;
+								else console.log(results.rows);
+								req.flash('success_msg', "You are now registered. Please login.");
+								res.render('pages/user_login', {
+									page_scripts: [],
+									page_link_tags: []
+								});
+							})
+							
 						}
 					)
 					.catch(err => console.log(err));
