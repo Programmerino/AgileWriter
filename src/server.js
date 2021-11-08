@@ -457,5 +457,7 @@ function checkNotAuthenticated(req,res,next) {
 	res.redirect('/Login');
 }
 
-app.listen(3000);
-console.log('3000 is the mAgIcAl PoRt~')
+const port = process.env.PORT || 3000
+const server = app.listen(port, () => {
+	console.log('${port}} ~♭♯iS tHe mAgIcAl PoRt~♩♬')
+});
