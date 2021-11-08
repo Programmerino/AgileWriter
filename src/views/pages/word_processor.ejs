@@ -32,22 +32,22 @@
 					<div class="col-auto justify-content-center">
 						
 						<% if(docTrue) { %> <!--This is the form for updating an already saved document-->
-							<form method="POST" action="/Editor/SaveDocument">
+							<form method="POST" action="/Editor/SaveDocument" id="saveDocument">
 								<input id="documentContents" name="documentContents" hidden value="">
 								<input id="documentTitle" name="documentTitle" hidden value="">
 								<input id="documentDirectory" name="documentDirectory" hidden value="">
-								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Push Document</button>
-								<button class="btn btn-danger btn-lg" type="submit" value="/Editor/SaveDocument">Save Document</button>
+								<input id="savedDocBool" name="savedDocBool" hidden value="true">
+								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Save Document</button>
 								<p id="docDirec" name="docDirec" class="lead text-truncate"><%=document_directory%></p>
 							</form>
 						<% }else{ %> <!--Separate form for a new document being saved-->
-							<form method="POST" action="/Editor/SaveDocument">
+							<form method="POST" action="/Editor/SaveDocument" id="saveDocument">
 								<input id="documentContents" name="documentContents" hidden value="">
 								<input id="documentTitle" name="documentTitle" hidden value="">
 								<input id="documentDirectory" name="documentDirectory" hidden value="">
-								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Push Document</button>
-								<button class="btn btn-danger btn-lg" type="submit" value="/Editor/SaveDocument">Save Document</button>
-								<p class="lead">No folder chosen</p>
+								<input id="savedDocBool" name="savedDocBool" hidden value="false">
+								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Save Document</button>
+								<p id="docDirec" name="docDirec" class="lead">root</p>
 							</form>
 						<% } %>
 					</div>
@@ -58,7 +58,7 @@
 			<div class="col-sm">
 				<div class="flex-row">
 					<table class="table">
-						<thead style="background-color: red; color:white;"><tr><td><p class="h4" style="margin:5px">Generate a new...</p></td></d></tr></thead>
+						<thead class="bg-danger" style="color:white;"><tr><td><p class="h4" style="margin:5px">Generate a new...</p></td></d></tr></thead>
 						<tr>
 							<td>
 							<form method="POST" action="">
@@ -78,7 +78,7 @@
 				</div>
 				<div class="flex-row overflow-auto">
 					<table class="table">
-						<thead style="background-color: red; color:white; border:0"><tr><td><p class="h4" style="margin:5px">Basic Document Statistics:</p></td></d></tr></thead>
+						<thead class="bg-danger" style="color:white; border:0"><tr><td><p class="h4" style="margin:5px">Basic Document Statistics:</p></td></d></tr></thead>
 						<tr><td>Date created: </td></tr>
 						<tr><td>Word count: </td></tr>
 						<tr><td>Sentence count: </td></tr>

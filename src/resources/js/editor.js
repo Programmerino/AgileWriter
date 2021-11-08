@@ -28,16 +28,19 @@ function getDocument() {
     console.log(stringContents);
     document.getElementById("documentContents").setAttribute("value", stringContents);
 
-    //This will need to be loaded into some kind of conglomerate button with the submitting of the form.
+    var form = document.getElementById("saveDocument");
+
     var title = document.getElementById("docTitle").value;
     if(!title) {
         title = document.getElementById("docTitle").innerHTML;
+        
     }
     console.log(title);
     document.getElementById("documentTitle").setAttribute("value", title);
 
     var directory = document.getElementById("docDirec").innerHTML;
     document.getElementById("documentDirectory").setAttribute("value", directory);
+    form.submit();
 }
 
 var editor = new Quill('#editor', {

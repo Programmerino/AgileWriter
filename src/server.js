@@ -26,7 +26,7 @@ app.use(passport.session());					// Link passport to session
 
 
 
-app.get('/', function(req, res) {
+app.get('/', checkNotAuthenticated, function(req, res) {
 	res.render('pages/home', {
 		page_scripts: [],
 		page_link_tags: [
@@ -258,40 +258,59 @@ function simpleParseSingleQuote(doc){
 }
 
 app.post('/Editor/SaveDocument', checkNotAuthenticated, (req,res)=>{
-	let{documentContents, documentTitle, documentDirectory} = req.body;
-	
-	//This is working, remember, you also have to hit the save button to make server side consolelogging happen
-	//var test = JSON.stringify(documentContents);
+	let{documentContents, documentTitle, documentDirectory, savedDocBool} = req.body;
 	documentContents = simpleParseSingleQuote(documentContents);
 	//console.log(documentContents);
 	documentContentsJSON = JSON.parse(documentContents);
 	//console.log(documentTitle);
 	//console.log(documentDirectory);
-	postgres.query(`SELECT * FROM documents WHERE title='${documentTitle}' AND user_id='${req.user.id}';`)
-	.then((results,err) => {
-		if(results.rows.length) { //If the user is editing a previously saved document
-			postgres.query(`UPDATE documents SET delta = '${documentContents}'::jsonb
-							WHERE title='${documentTitle}' AND user_id='${req.user.id}'`)
-			.then((results,err)=>{
-				res.redirect("/Documents");
-			})
-			
-		}else{ //If a user is inserting a brand new document
-			postgres.query(`INSERT INTO documents (user_id, folder, title, delta, created)
-							SELECT id, folder, title, delta, created FROM users
-							RIGHT JOIN (VALUES
-								('${req.user.username}', '${documentTitle}', 'root', '${documentContents}'::jsonb, NOW())
-							) AS doc (owner, title, folder, delta, created)
-							ON owner = username;`)
-							.then((results,err)=>{
-								res.redirect("/Documents");
-							}) //For the insert statement I used what was similar to the create.sql
-		}
-	})
 
-	
-	
-	
+	if(savedDocBool == "true") //If we're purely trying to update a document
+		{
+			postgres.query(`SELECT * FROM documents WHERE title='${documentTitle}' AND user_id='${req.user.id}';`)
+			.then((results,err) => {
+				if(results.rows.length) { //If the user is editing a previously saved document
+					postgres.query(`UPDATE documents SET delta = '${documentContents}'::jsonb
+									WHERE title='${documentTitle}' AND user_id='${req.user.id}'`)
+					.then((results,err)=>{
+						res.redirect("/Documents");
+					})
+					
+				}
+			})
+		}
+	else { //If the user is creating and uploading a new document
+		postgres.query(`SELECT * FROM documents WHERE strpos(title, '${documentTitle}') > 0 AND user_id='${req.user.id}';`)
+		.then((results,err) => {
+			if(results.rows.length) { //If the user is attempting to title a document the same as a previous document
+				console.log(results.rows.length);
+				updatedDocumentTitle = documentTitle + " (" + results.rows.length + ")"; //Does the conventional addition to same file name of adding (i) where i is index
+				postgres.query(`INSERT INTO documents (user_id, folder, title, delta, created)
+								SELECT id, folder, title, delta, created FROM users
+								RIGHT JOIN (VALUES
+									('${req.user.username}', '${updatedDocumentTitle}', 'root', '${documentContents}'::jsonb, NOW())
+								) AS doc (owner, title, folder, delta, created)
+								ON owner = username;`)
+								.then((results,err)=>{
+									res.redirect("/Documents");
+								})
+								.catch(err=>{
+									throw err;
+								})
+				
+			}else{ //If a user is inserting a brand new document
+				postgres.query(`INSERT INTO documents (user_id, folder, title, delta, created)
+								SELECT id, folder, title, delta, created FROM users
+								RIGHT JOIN (VALUES
+									('${req.user.username}', '${documentTitle}', 'root', '${documentContents}'::jsonb, NOW())
+								) AS doc (owner, title, folder, delta, created)
+								ON owner = username;`)
+								.then((results,err)=>{
+									res.redirect("/Documents");
+								}) //For the insert statement I used what was similar to the create.sql
+			}
+		})
+	}
 });
 
 app.get('/Generator', checkNotAuthenticated, function(req, res) {
