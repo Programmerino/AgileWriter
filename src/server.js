@@ -181,12 +181,13 @@ app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
 		`)
 		.then((results, err) => {
 			let fileDirec = results.rows[0].directory;
+			let docTitleParsed = simpleParseSingleQuote(req.params.file);
 			postgres.query(`
 				SELECT delta
 				FROM documents
 				WHERE user_id=${req.user.id}
 				AND folder='${results.rows[0].directory}'
-				AND title='${req.params.file}';
+				AND title='${docTitleParsed}';
 			`)
 			.then((results, err) => {
 				res.render('pages/word_processor', {
@@ -259,6 +260,7 @@ function simpleParseSingleQuote(doc){
 
 app.post('/Editor/SaveDocument', checkNotAuthenticated, (req,res)=>{
 	let{documentContents, documentTitle, documentDirectory, savedDocBool} = req.body;
+	documentTitle = simpleParseSingleQuote(documentTitle);
 	documentContents = simpleParseSingleQuote(documentContents);
 	//console.log(documentContents);
 	documentContentsJSON = JSON.parse(documentContents);
