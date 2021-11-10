@@ -17,7 +17,7 @@ services:
   # For more details see `server.js`.
   db:
     image: postgres
-    ironment:
+    environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: pwd
       POSTGRES_DB: agile_db
@@ -34,8 +34,8 @@ services:
     image: node:12
     user: "node" # Use a non-root user node
     working_dir: /home/node/app # with home directory /home/node/app
-    #ironment:
-    #  - NODE_=production # << Use this when deploying your application,
+    # environment:
+    #  - NODE_ENV=production # << Use this when deploying your application,
     #                                           #   currently we have it off so that changes to
     #                                           #   *.ejs are visible without restarting docker-compose.
     depends_on:
