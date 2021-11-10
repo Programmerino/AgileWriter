@@ -318,6 +318,7 @@ app.post('/Editor/SaveDocument', checkNotAuthenticated, (req,res)=>{
 app.get('/Generator', checkNotAuthenticated, function(req, res) {
 	res.render('pages/prompt_generator', {
 		page_scripts: [
+			{src:'/resources/js/prompt_generator.js',type:'text/javascript'},
 			{src:'/resources/js/bundle.js',type:'text/javascript'}
 		],
 		page_link_tags: [],
