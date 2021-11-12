@@ -15,25 +15,27 @@ services:
   # This section defines our PostgreSQL database [2].
   # Note that the name `db` also becomes the hostname of the postgres container.
   # For more details see `server.js`.
+  heroku-cli:
+    build: ./heroku
+    env_file: ./heroku/.env
+
   db:
-    image: postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: pwd
-      POSTGRES_DB: agile_db
-    expose:
-      - "5432" # We need only expose port `5432` internally to node (not the host)
+    build: ./db
+    env_file: .env
     volumes:
       - amazone-db-img:/var/lib/postgresql/data # Creates a docker managed volume to persist your data.
-      - ./init_data:/docker-entrypoint-initdb.d # Binds ./init_data to docker-entrypoint-initdb.d.
+      - ./db/init_data:/docker-entrypoint-initdb.d # Binds ./init_data to docker-entrypoint-initdb.d.
     #   The postgres image will run any files in this directory on startup,
     #   in our case the file `init_data/create.sql`
 
   # ------------------------------------------- # This section defines our Node.js image [3].
   web:
-    image: node:12
-    user: "node" # Use a non-root user node
-    working_dir: /home/node/app # with home directory /home/node/app
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: devapp
+    # user: "node" # Use a non-root user node
+    # working_dir: /home/node/app # with home directory /home/node/app
     # environment:
     #  - NODE_ENV=production # << Use this when deploying your application,
     #                                           #   currently we have it off so that changes to
@@ -47,8 +49,8 @@ services:
       - ./:/home/node/app # Binds the current directory (containing our source code) into the image,
         #  so that changes made to the source code on the host
         #  are reflected witin the container.
-    command:
-      "npm start" # This is a semi-hack for this lab that runs both npm install
+    # command:
+    #   "npm start" # This is a semi-hack for this lab that runs both npm install
       # and node index.js (see the prestart command in package.json)
 # This defines our volume(s), which will perist throughout startups.
 # If you want to get rid of a hanging volume, e.g. to test your database init,

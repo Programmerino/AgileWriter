@@ -461,5 +461,5 @@ function checkNotAuthenticated(req,res,next) {
 
 const port = process.env.PORT || 3000
 const server = app.listen(port, () => {
-	console.log('${port}} ~♭♯iS tHe mAgIcAl PoRt~♩♬')
+	console.log('${port}} ~~~iS tHe mAgIcAl PoRt~~~')
 });

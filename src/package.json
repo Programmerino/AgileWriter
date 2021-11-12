@@ -4,10 +4,13 @@
 	"version": "2.0.0",
 	"private": true,
 	"scripts": {
-		"prestart": "npm install",
 		"start": "nodemon server.js -L",
+		"dev": "node server.js",
 		"build": "dotnet fable src && webpack",
 		"watch-compile": "dotnet fable watch src"
+	},
+	"engines": {
+		"node": "12.x"
 	},
 	"devDependencies": {
 		"nodemon": "^2.0.14",
@@ -20,7 +23,6 @@
 		"ejs": "^3.1.5",
 		"ejs-lint": "^1.1.0",
 		"express": "^4.17.1",
-		"pg-promise": "^10.11.1",
 		"dotenv": "^10.0.0",
 		"express-flash": "0.0.2",
 		"express-session": "^1.17.2",
