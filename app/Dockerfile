@@ -46,7 +46,7 @@ RUN npm install
 FROM dev_dependencies AS devapp
 RUN mkdir /app/src
 USER node
-WORKDIR /app
+WORKDIR /app/src
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
@@ -67,7 +67,7 @@ COPY src /prodapp/src
 # ------------------------------------------------------------------------------
 
 USER node
-WORKDIR /prodapp
+WORKDIR /prodapp/src
 EXPOSE 3000
 ENV \
   NODE_ENV='production'

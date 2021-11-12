@@ -5,15 +5,15 @@ const session = require('express-session');				// TODO: Add comment
 const flash = require('express-flash');					// TODO: Add comment
 const bcrypt = require("bcrypt");						// For encryption of passwords
 const passport = require("passport");					// For verifying
-const initializePassport = require("./passportConfig");	// Load passport config
-const {postgres} = require("./dbConfig");				// Load database config
+const initializePassport = require("../passportConfig");	// Load passport config
+const {postgres} = require("../dbConfig");				// Load database config
 const ROOT_DIR_NICKNAME = "My Documents";				// Determines nickname for root
 
 initializePassport(passport);
 app.use(bodyParser.json());              				// support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); 	// support encoded bodies that a user is signed in before accessing various pages
 app.set('view engine', 'ejs')							// enable usage of ejs format over html 
-app.use(express.static(__dirname + '/'));				// set app directory
+app.use(express.static(__dirname + '/../'));			// set app directory
 app.use(session({										// Initialize session module
 	secret: 'cApItAlIsM$$$wIlL$$$bE$$$oUr$$$DoWnFaLl',	// Secret key to encrypt session info
 	resave: false, 										// TODO: Add comment

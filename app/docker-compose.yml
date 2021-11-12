@@ -23,7 +23,7 @@ services:
     build: ./db
     env_file: .env
     volumes:
-      - amazone-db-img:/var/lib/postgresql/data # Creates a docker managed volume to persist your data.
+      - amazone-db:/var/lib/postgresql/data # Creates a docker managed volume to persist your data.
       - ./db/init_data:/docker-entrypoint-initdb.d # Binds ./init_data to docker-entrypoint-initdb.d.
     #   The postgres image will run any files in this directory on startup,
     #   in our case the file `init_data/create.sql`
@@ -46,7 +46,7 @@ services:
     ports:
       - "3000:3000" # Here we do need to publish the port for viewing on the host.
     volumes:
-      - ./:/home/node/app # Binds the current directory (containing our source code) into the image,
+      - ./:/app/src # Binds the current directory (containing our source code) into the image,
         #  so that changes made to the source code on the host
         #  are reflected witin the container.
     # command:
@@ -57,4 +57,4 @@ services:
 # run `docker-compose rm -v`. Note that this will remove ALL of your data, so
 # be extra sure you've made a stable backup somewhere.
 volumes:
-  amazone-db-img: {}
+  amazone-db: {}
