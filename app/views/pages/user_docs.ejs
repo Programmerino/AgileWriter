@@ -1,0 +1,158 @@
+<%- include ('../partials/header') %>
+<body>
+	<%- include ('../partials/menu') %>
+	<div class="container-fluid">
+		<br>
+		<div class="row d-flex">
+			<div class="col-md-3 justify-content-center">
+				<div class="card">
+					<div class="card-header">
+						<h3>Directory</h3>
+					</div>
+					<div class="card-body">
+						<% let generateDirectory = function(directory, level, path) {
+							let sub_folders = Object.keys(directory)
+							sub_folders.forEach(sub_folder => {
+								let sub_folder_id = sub_folder.replace(/ /g, '-')
+								let sub_folder_path = level ? path + '/' + sub_folder_id : '';
+								let state = dir_state[sub_folder_path]
+								let show = (state) ? '' : ' show'
+								let hide = (state) ? ' collapsed' : ''
+								if (Object.keys(directory[sub_folder]).length)
+								{
+									let directory_element = `
+										<div class="accordian accordian-flush">
+											<div class="accordian-item">
+												<div class="accordian-header" id="${sub_folder_id}_directory">
+													<div class="btn-group w-100" role="expand" aria-label="Expand directory">
+														<a
+															class="list-group-item list-group-item-action text-start w-100 border-0 ps-0"
+															type="button"
+															href="/Documents${sub_folder_path}"
+														>
+															${sub_folder}
+														</a>
+														<form action="/Documents/UpdateState" method="post">
+															<button
+																class="accordion-button${hide} w-auto py-2 px-1"
+																type="submit"
+																data-bs-toggle="collapse"
+																data-bs-target="#${sub_folder_id}"
+																name="folder"
+																value="${sub_folder_path}"
+															></button>
+														</form>
+													</div>
+												</div>
+												<div class="accordian-collapse collapse${show}" id="${sub_folder_id}">
+													<div class="accordian-body" style="padding-left:20px">`
+														%><%- directory_element %><%
+														generateDirectory(directory[sub_folder], level + 1, sub_folder_path)
+														directory_element = `
+													</div>
+												</div>
+											</div>
+										</div>`
+									%><%- directory_element %><%
+								}
+								else {
+									let terminating_element = `
+										<a
+											class="list-group-item list-group-item-action text-start border-0 py-2 px-0"
+											type="button"
+											href="/Documents${sub_folder_path}"
+										>
+											${sub_folder}
+										</a>`
+									%><%- terminating_element %><%
+								}
+							});
+						} %>
+						<%  generateDirectory(user_folders, 0, ''); %>
+					</div>
+				</div>
+				<br>
+				<div class="d-flex row justify-content-center">
+					<div class="col-sm-5">
+						<button class="rounded bg-dark btn-outline-dark text-light" onclick="location.href='/Editor'">
+							New Document
+						</button>
+					</div>
+					<div class="col-sm-5">
+						<button class="rounded bg-dark btn-outline-dark text-light" onclick="createNewFolder()">
+							New Folder
+						</button>
+					</div>
+				</div>
+
+			</div>
+			<div class="col">
+				<div class="flex-row bg-light">
+					<div class="card-header">
+						<h3><%= dir_current %></h3>
+					</div>
+					<div class="container-fluid">
+						<div class="row"  id="document_window">
+							<% let document_window = ''; %>
+							<% Object.keys(dir_state).forEach(folder => {
+								let ref_path = dir_path.length ? dir_path : '/'
+								let check = folder.replace(ref_path,'');
+								if (check != folder)
+								{
+									if (check[0] === '/') check = check.substring(1);
+									if (check == check.replace(/\//g,''))
+									{
+										let folder_image = "/resources/img/folder.png";
+										if (!check) {
+											check = '...';
+											folder = folder.replace(dir_current.replace(/ /g,'-'),'');
+											folder = folder.substring(0,folder.length-1);
+											folder_image = "/resources/img/back_folder.png";
+										}
+										document_window += `
+										<div class="col-auto">
+											<a class="card bg-transparent border-0" href="/Documents${folder}" style="width:200px">
+												<div class="card-body bg-transparent text-center">
+													<img src="${folder_image}" width=150 height=150>
+												</div>
+												<div class="card-footer bg-transparent text-center">${check}</div>
+											</a>
+										</div>
+										`
+									}
+								}
+							}); %>
+							<% user_docs.forEach(document => {
+								document_window += `
+								<div class="col-auto">
+									<form action="/Editor/LoadDocument" method="post">
+										<button
+											class="card bg-transparent border-0"
+											style="width:200px"
+											type="submit"
+											name="file"
+											value="root${dir_path.replace(/-/g,' ')}/${document.title}"
+										>
+											<div class="card-body bg-transparent text-center">
+												<img src="/resources/img/document.png" width=150 height=150>
+											</div>
+											<div class="card-footer bg-transparent text-center">${document.title}</div>
+										</button>
+									</form>
+								</div>
+								`
+							}); %>
+							<%- document_window %>
+							<div class="col"></div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</body>
+<footer>
+	<%- include('../partials/script_loader') %>
+</footer>
+</html>

@@ -1,0 +1,36 @@
+{
+	"name": "agile-writer",
+	"main": "server.js",
+	"version": "2.0.0",
+	"private": true,
+	"scripts": {
+		"start": "nodemon server.js -L",
+		"dev": "node server.js",
+		"build": "dotnet fable src && webpack",
+		"watch-compile": "dotnet fable watch src"
+	},
+	"engines": {
+		"node": "12.x"
+	},
+	"devDependencies": {
+		"nodemon": "^2.0.14",
+		"webpack": "^4.46.0",
+		"webpack-cli": "^3.3.0",
+		"webpack-dev-server": "^3.11.2"
+	},
+	"dependencies": {
+		"body-parser": "^1.19.0",
+		"ejs": "^3.1.5",
+		"ejs-lint": "^1.1.0",
+		"express": "^4.17.1",
+		"dotenv": "^10.0.0",
+		"express-flash": "0.0.2",
+		"express-session": "^1.17.2",
+		"passport": "^0.5.0",
+		"passport-local": "^1.0.0",
+		"pg": "^8.7.1",
+		"node-gyp": "^8.3.0",
+		"node-pre-gyp": "^0.17.0",
+		"bcrypt": "^3.0.6"
+	}
+}

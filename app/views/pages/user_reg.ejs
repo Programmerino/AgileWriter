@@ -1,0 +1,65 @@
+<%- include ('../partials/header') %>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+		<div class="navbar-brand">
+			<h1>Amazone's Agile Writer</h1>
+		</div>
+		<div class="ml-auto">
+			<a class="nav-link p-0" href="https://github.com/CU-CSCI-3308-Fall-2021/lab-4-html-css-Toasted-Rice">
+				<button type="button" class="btn bg-transparent text-white" style="display:inline-flex">
+					<h3 class="mr-2">Github</h3>
+					<svg class="bi bi-github mr-2" xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16">
+						<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+					</svg>
+				</button>
+			</a>
+		</div>
+	</nav>
+    <div class="container-fluid">
+        <div class="row d-flex justify-content-center h-100">
+			<div class="col-md-8 col-lg-6 col-xl-4">
+				<div class="row">
+				<br>
+				<ul> <!--This is the list of potential errors that could be pushed by the form post function (below) in server.js-->
+					<% if(typeof errors != 'undefined') { %> <% errors.forEach(error=>{ %>
+					<br>
+					<li><%= error.message %></li>
+					<% }) %> <% } %>
+				</ul>
+				</div>
+				<br>
+				<form action="/Register" method="POST">
+				<!-- Username input -->
+				<div class="form-outline mb-4">
+					<input name="username" type="username" id="username" class="form-control form-control-lg"
+					placeholder="Create a username" required/>
+				</div>
+		
+				<!-- Password input -->
+				<div class="form-outline mb-3">
+					<input name="userPassword" type="password" id="userPassword" class="form-control form-control-lg"
+					placeholder="Create a password" required/>
+				</div>
+		
+				<div class="form-outline mb-3">
+					<input name="confPassword" type="password" id="confPassword" class="form-control form-control-lg"
+					placeholder="Confirm your password" required/>
+				</div>
+
+				<div class="text-center text-lg-start mt-4 pt-2">
+					<button type="submit" class="btn btn-danger btn-lg"
+					style="padding-left: 2.5rem; padding-right: 2.5rem;" value="/Register">Register</button>
+					<p class="small fw-bold mt-2 pt-1 mb-0">Already have an account? <a href="Login"
+						style="color:red">Login</a></p>
+				</div>
+		
+				</form>
+			</div>
+        </div>
+    </div>
+</body>
+<footer>
+	<%- include('../partials/script_loader') %>
+</footer>
+</html>

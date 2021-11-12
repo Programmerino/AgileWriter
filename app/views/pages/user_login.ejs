@@ -1,0 +1,55 @@
+<%- include ('../partials/header') %>
+<body>
+    <%- include ('../partials/banner') %>
+    <div class="container-fluid">
+        <div class="row d-flex justify-content-center h-100">
+			<div class="col-md-8 col-lg-6 col-xl-4">
+				<br>
+				<ul>
+				<% if(messages.success_msg) { %>
+					<li>  <%= messages.success_msg %> </li>
+				<%  } %>
+				</ul>
+				<ul>
+				<% if(messages.error){ %>
+					<li><%= messages.error %> </li>
+				<% } %>
+				</ul>
+				<br>
+				<form action="/Login" method="POST">
+				<!-- Username input -->
+				<div class="form-outline mb-4">
+					<input type="username" id="username" name="username" class="form-control form-control-lg"
+					placeholder="Enter your username" required/>
+				</div>
+		
+				<!-- Password input -->
+				<div class="form-outline mb-3">
+					<input type="password" id="userPassword" name="userPassword" class="form-control form-control-lg"
+					placeholder="Enter password" required/>
+				</div>
+		
+				<div class="text-center text-lg-start mt-4 pt-2">
+					<button
+						type="submit"
+						id="login-button"
+						value="/Login"
+						class="btn btn-danger btn-lg"
+						style="padding-left: 2.5rem; padding-right: 2.5rem;""
+					>Login</button>
+					<p class="small fw-bold mt-2 pt-1 mb-0">Don't have an account?</p>
+					<p class="small fw-bold mt-0 pt-1 mb-0">
+						<a class="me-2" href="Register" style="color:red">Register</a>
+						<a class="ms-2" type="button" style="color:red;" onclick="loginAsTestUser()"><u>Login as Test User</u></a>
+					</p>
+				</div>
+		
+				</form>
+			</div>
+        </div>
+    </div>
+</body>
+<footer>
+	<%- include('../partials/script_loader') %>
+</footer>
+</html>

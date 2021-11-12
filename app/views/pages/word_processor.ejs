@@ -1,0 +1,100 @@
+<%- include ('../partials/header') %>
+
+<body id="content" onload="loadEditor()">
+	<%- include ('../partials/menu') %>
+	<div class="container mt-3 flex-row">
+		<div class="row">
+			<div class="col-lg-auto" style="width:75%">
+				<div class="row" style="width:50%; margin:0px;">
+					<% if(!document_delta) { %> <!--If this is a fresh editor-->
+						<input id="docTitle" name="docTitle" type="text" placeholder="Title your document..." contents="">
+					<% } else { %> <!--If this is a document being loaded-->
+						<h2 id="docTitle" class="h2"><%=document_title%></h1>
+					<%}%>
+				</div>
+				<br>
+				<div style="width:100%; height:350px;" id="editor" class="overflow-auto">
+					<% let docTrue = true;%>
+					<% if (!document_delta) { 
+						document_delta = `{"ops":[
+						{"attributes":{"color":"#e60000","size":"20px"},"insert":"Hello world!"},
+						{"insert":"\\nSome initial "},
+						{"attributes":{"bold":true},"insert":"bold"},
+						{"insert":" text\\n\\n"
+						}]}`
+						docTrue = false;
+						}
+						%>
+					<%- document_delta %>
+				</div>
+				<br>
+				<div class="row d-flex">
+					<div class="col-auto justify-content-center">
+						
+						<% if(docTrue) { %> <!--This is the form for updating an already saved document-->
+							<form method="POST" action="/Editor/SaveDocument" id="saveDocument">
+								<input id="documentContents" name="documentContents" hidden value="">
+								<input id="documentTitle" name="documentTitle" hidden value="">
+								<input id="documentDirectory" name="documentDirectory" hidden value="">
+								<input id="savedDocBool" name="savedDocBool" hidden value="true">
+								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Save Document</button>
+								<p id="docDirec" name="docDirec" class="lead text-truncate"><%=document_directory%></p>
+							</form>
+						<% }else{ %> <!--Separate form for a new document being saved-->
+							<form method="POST" action="/Editor/SaveDocument" id="saveDocument">
+								<input id="documentContents" name="documentContents" hidden value="">
+								<input id="documentTitle" name="documentTitle" hidden value="">
+								<input id="documentDirectory" name="documentDirectory" hidden value="">
+								<input id="savedDocBool" name="savedDocBool" hidden value="false">
+								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Save Document</button>
+								<p id="docDirec" name="docDirec" class="lead">root</p>
+							</form>
+						<% } %>
+					</div>
+					
+					
+				</div>
+			</div> <!--col-->
+			<div class="col-sm">
+				<div class="flex-row">
+					<table class="table">
+						<thead class="bg-danger" style="color:white;"><tr><td><p class="h4" style="margin:5px">Generate a new...</p></td></d></tr></thead>
+						<tr>
+							<td>
+							<form method="POST" action="">
+								<button class="card bg-transparent border-0" type="submit" value="sentence" name="genType">Sentence (NONFUNCTIONAL)</button>
+							</form>
+							</td>
+						</tr>
+						<tr>
+							<td>
+							<form method="POST" action="">
+								<button class="card bg-transparent border-0" type="submit" value="paragraph" name="genType">Paragraph (NONFUNCTIONAL)</button>
+								
+							</form>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div class="flex-row overflow-auto">
+					<table class="table">
+						<thead class="bg-danger" style="color:white; border:0"><tr><td><p class="h4" style="margin:5px">Basic Document Statistics:</p></td></d></tr></thead>
+						<tr><td>Date created: </td></tr>
+						<tr><td>Word count: </td></tr>
+						<tr><td>Sentence count: </td></tr>
+						<tr><td>Auto-generations: </td></tr>
+						<tr><td>Rough page count: </td></tr>
+					</table>
+				</div>
+			</div>
+		</div>
+		
+
+	</div> 
+	
+</body>
+<footer>
+<%- include('../partials/script_loader') %>
+<script src="../../resources/js/editor.js"></script>
+</footer>
+</html>
