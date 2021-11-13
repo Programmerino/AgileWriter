@@ -79,7 +79,17 @@ var editor = new Quill('#editor', {
                 'image',
                 'video'
             ]
-        ]
+        ],
+		keyboard: {
+			bold: {
+				key: 'K',
+				shiftKey: true,
+				shortKey: true,
+				handler: (range, context) => {
+					this.quill.formatText(range, 'bold', true);
+				}
+			}
+		}
     }
 });
 

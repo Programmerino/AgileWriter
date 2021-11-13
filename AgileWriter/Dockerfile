@@ -46,7 +46,7 @@ RUN npm install
 FROM dev_dependencies AS devapp
 RUN mkdir /app/src
 USER node
-WORKDIR /app/src
+WORKDIR /app
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
 

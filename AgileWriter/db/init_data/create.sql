@@ -1,29 +1,32 @@
-CREATE TABLE users (
+DROP TABLE IF EXISTS users;
+CREATE TABLE IF NOT EXISTS users (
 	id BIGSERIAL PRIMARY KEY,
-	username	VARCHAR(60)  NOT NULL,
-	password	VARCHAR(60) NOT NULL,
-	created_on	TIMESTAMPTZ  NOT NULL,
-	last_login	TIMESTAMPTZ,
+	username 	VARCHAR(60)  NOT NULL,
+	password 	VARCHAR(60) NOT NULL,
+	created_on 	TIMESTAMPTZ  NOT NULL,
+	last_login 	TIMESTAMPTZ,
 	UNIQUE (username)
 );
 
-CREATE TABLE file_directory (
-	user_id		BIGINT NOT NULL,
-	hash_id		VARCHAR(200) DEFAULT 'UNINITIALIZED',
-	directory	VARCHAR(65536) NOT NULL,
-	collapsed	BOOLEAN DEFAULT TRUE,
+DROP TABLE IF EXISTS file_directory;
+CREATE TABLE IF NOT EXISTS file_directory (
+	user_id 	BIGINT NOT NULL,
+	hash_id	 	VARCHAR(200) DEFAULT 'UNINITIALIZED',
+	directory 	VARCHAR(65536) NOT NULL,
+	collapsed 	BOOLEAN DEFAULT TRUE,
 	PRIMARY KEY (user_id, directory),
 	FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE,
 	CONSTRAINT reserved_name CHECK (directory <> 'root/UpdateState')
 );
 
-CREATE TABLE documents (
-	user_id		BIGINT NOT NULL,
-	folder		VARCHAR(65536) NOT NULL,
-	title		VARCHAR(60) NOT NULL,
-	delta		JSON NOT NULL,
-	created		TIMESTAMPTZ NOT NULL,
-	modified	TIMESTAMPTZ,
+DROP TABLE IF EXISTS documents;
+CREATE TABLE IF NOT EXISTS documents (
+	user_id 	BIGINT NOT NULL,
+	folder 		VARCHAR(65536) NOT NULL,
+	title 		VARCHAR(60) NOT NULL,
+	delta 		JSON NOT NULL,
+	created 	TIMESTAMPTZ NOT NULL,
+	modified 	TIMESTAMPTZ,
 	PRIMARY KEY (user_id, folder, title),
 	FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE,
 	FOREIGN KEY (user_id, folder) REFERENCES file_directory (user_id, directory) ON UPDATE CASCADE
@@ -31,13 +34,14 @@ CREATE TABLE documents (
 
 SET TIMEZONE = 'America/Denver';
 
-INSERT INTO users (username, password, created_on)
-VALUES ('test', '', NOW()), ('dummy', '', NOW());
+INSERT INTO users (username, password, created_on) VALUES 
+('test' , '$2b$10$GoaXDragehkLX3VeoVajMu1D/foSrFdSF1c2VtB1mx9AGJQKG8Dcm', NOW()),
+('dummy', '$2b$10$GoaXDragehkLX3VeoVajMu1D/foSrFdSF1c2VtB1mx9AGJQKG8Dcm', NOW());
 
 INSERT INTO file_directory (user_id, directory)
 SELECT id, folder FROM users
-RIGHT JOIN (VALUES
-	('test', 'root'),
+RIGHT JOIN (
+VALUES('test', 'root'),
 	('test', 'root/School'),
 	('test', 'root/School/CSCI 3308'),
 	('test', 'root/School/CSCI 3308/All these layers'),
@@ -56,8 +60,8 @@ ON owner = username;
 
 INSERT INTO documents (user_id, folder, title, delta, created)
 SELECT id, folder, title, delta, created FROM users
-RIGHT JOIN (VALUES
-	('test', 'Look at me!!!', 'root',
+RIGHT JOIN (
+VALUES('test', 'Look at me!!!', 'root',
 		'{"ops":[{"attributes":{"size":"16px","color":"#000000","bold":true},"insert":"It was quiet. Almost too quiet."},{"attributes":{"size":"16px","color":"#000000"},"insert":" I could hear my heart pounding in my ears, and I was sure I could hear the slow, steady breathing of the person in the room with me. I was trying to stay calm, but I was having a hard time doing it. I was so scared."},{"insert":"\\n\\nI heard the footsteps of the person who was with me, and then I heard the sound of a door opening. The footsteps stopped, and then I heard the sound of a door closing. I was so scared. I had no idea what was going to happen next.\\n\\nI was sitting on the edge of my bed, and I could hear the footsteps of\\n"}]}'::jsonb,
 	NOW()),
 	('test', 'same document', 'root/School', 

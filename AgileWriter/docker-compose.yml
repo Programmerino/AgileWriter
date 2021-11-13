@@ -1,0 +1,43 @@
+# ------------------------------------------------------------------------------
+# More resources related to this file:
+# [1] Overview   | https://docs.docker.com/compose/
+# [2] PostgreSQL | https://github.com/docker-library/docs/tree/master/postgres
+# [3] Node.js    | https://github.com/nodejs/docker-node/blob/master/README.md#how-to-use-this-image
+# -------------
+#  More resources for your projects:
+# [4] Samples    | https://github.com/docker/awesome-compose
+# [5]  Vars   | https://docs.docker.com/compose/ironment-variables/
+# [6] Secrets    | https://docs.docker.com/engine/swarm/secrets/#use-secrets-in-compose
+# ------------------------------------------------------------------------------
+
+# This section defines all of our components, each which is itself a docker image [1].
+services:
+  # This section defines our PostgreSQL database [2].
+  # Note that the name `db` also becomes the hostname of the postgres container.
+  # For more details see `server.js`.
+  heroku-cli:
+    build: ./heroku
+    env_file: ./heroku/.env
+
+  db:
+    build: ./db
+    env_file: .env
+    volumes:
+      - amazone-db:/var/lib/postgresql/data
+      - ./db/init_data:/docker-entrypoint-initdb.d
+      
+      
+  web:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: devapp
+    depends_on:
+      - db
+    env_file: .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src/:/app/src
+volumes:
+  amazone-db: {}
