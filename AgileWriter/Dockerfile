@@ -30,14 +30,14 @@ WORKDIR /app
 
 FROM base AS prod_dependencies
 COPY package*.json ./
-RUN npm install --production --silent
+RUN npm install --cache /tmp/empty-cache --production --silent
 
 # ------------------------------------------------------------------------------
 # Install remaining dev dependencies.
 # ------------------------------------------------------------------------------
 
 FROM prod_dependencies AS dev_dependencies
-RUN npm install
+RUN npm install --cache /tmp/empty-cache
 
 # ------------------------------------------------------------------------------
 # Setup dev target.
@@ -54,7 +54,7 @@ CMD ["npm", "run", "dev"]
 # Setup production target (/prodapp)
 # ------------------------------------------------------------------------------
 
-FROM node:14-alpine AS prodapp
+FROM node@sha256:0ae1a6a3a8a61e2bcf7f826b2562eb865f9a3095acf41bc6f184773ab66f3007 AS prodapp
 
 # Create prodapp directory
 WORKDIR /prodapp
