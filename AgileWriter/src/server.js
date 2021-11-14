@@ -50,9 +50,9 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 			SELECT parent_id, folder_id, folder_name, title, collapsed
 			FROM file_directory AS dir LEFT JOIN documents AS doc
 			ON folder = folder_id AND dir.user_id = doc.user_id
-			
+
 			GROUP BY dir.user_id, parent_id, folder_id, folder_name, title, collapsed
-			HAVING dir.user_id = ${req.user.id} AND parent_id <> folder_id
+			HAVING dir.user_id = ${req.user.id}
 			ORDER BY parent_id,  folder_id, title DESC
 		;`),
 		postgres.query(`
@@ -81,9 +81,10 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 		;`)
 	])
 	.then(batch => {
-		let directory 		= batch[0].value.rows;
-		let current_files 	= batch[1].value.rows;
-		let current_folders = batch[2].value.rows;
+		let directory 		  = batch[0].value.rows;
+		let current_files 	  = batch[1].value.rows;
+		let current_folders   = batch[2].value.rows;
+		let root_is_collapsed = batch[0].value.rows.shift().collapsed
 
 		let map_path = {};
 		let map_state = {};
@@ -96,6 +97,7 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 		map_parent[0] = 0;
 		map_path[0] = '';
 		map_path[map_path[0]] = 0;
+		map_state[0] = root_is_collapsed;
 		
 		// Child folders cannot be initialized before parent folders.
 		// The following for loop ensures they're visited in the correct order.
@@ -186,7 +188,7 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 });
 
 app.post('/DocumentBrowser/UpdateState', checkNotAuthenticated, function (req, res) {
-	let folder_id = req.body.folder;
+	let folder_id = parseInt(req.body.folder);
 	postgres
 		.query(`
 			UPDATE file_directory
@@ -516,7 +518,6 @@ function checkNotAuthenticated(req,res,next) {
 	res.redirect('/Login');
 }
 
-const port = process.env.PORT || 3000
-const server = app.listen(port, () => {
-	console.log('${port}} ~~~iS tHe mAgIcAl PoRt~~~')
+const server = app.listen(process.env.PORT || 3000, () => {
+	console.log('${port}} ...is tHe mAgIcAl PoRt~   ☆ ★ ☆ ★ ☆ ★   ~tRoP lAcIgAm eHt si...')
 });

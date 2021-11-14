@@ -55,6 +55,25 @@ function createNewFolder() {
     folderList.append(newListItem);
 }
 
+
+
+
+
+
+
+// ------------- POSTING WITH AJAX ----------------
+
+function directory_toggle(folder_id) {
+	$.ajax({
+		url: '/DocumentBrowser/UpdateState',
+		type: 'POST',
+		cache: false,
+		data: {folder: folder_id}
+	});
+}
+
+// --------- START OF DRAG & DROP CODE ------------
+
 var drag = null, hover = null;
 var dragPos = [0,0];
 var mousePos = [0,0];
@@ -131,18 +150,21 @@ document.onmouseup = (e) => {
 
 			let document_window = document.getElementById("document_window");
 			let current_folder = document_window.parentElement.id;
-			let first_folder = document_window.firstElementChild;
-			if (document_window.childElementCount < 4) {
-				if (first_folder.innerText === '...')
-					document.getElementById(current_folder+'-toggle').hidden = true;
-				console.log(first_folder.id+'-toggle');
-			}
-				
+			let first_folder = document_window.children[1].id;
+			if (first_folder.substring(0,6) === 'folder')
+				document.getElementById(current_folder+'-toggle').hidden = true;
 			
-			document.getElementById("move-item-type").value = drag.classList[1];
-			document.getElementById("move-item-dest").value = dest;
-			document.getElementById("move-item-src" ).value = src;
-			document.getElementById("move-item").submit();
+			$.ajax({
+				url: '/MoveItem',
+				type: 'POST',
+				cache: false,
+				data: {
+					type: drag.classList[1],
+					source: src,
+					destination: dest
+				}
+			});
+
 			drag.parentElement.remove()
 			drag = hover = null;
 		} else {

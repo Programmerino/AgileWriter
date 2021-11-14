@@ -4,7 +4,7 @@
 	<div class="container-fluid">
 		<br>
 		<div class="row d-flex">
-			<div class="col-md-3 justify-content-center">
+			<div class="col-md-3 justify-content-center" id="directory_window">
 				<div class="card">
 					<div class="card-header">
 						<h3>Directory</h3>
@@ -31,19 +31,17 @@
 														type="button"
 														href="/Documents${sub_folder_path}"
 													>${sub_folder}</a>
-													<form action="/DocumentBrowser/UpdateState" method="post" id="folder-${sub_folder_id}-toggle"${expandable}>
+													<div id="folder-${sub_folder_id}-toggle"${expandable}>
 														<button
 															class="accordion-button${hide} w-auto py-2 px-1"
-															type="submit"
 															data-bs-toggle="collapse"
-															data-bs-target="#folder${sub_folder_id}"
-															name="folder"
-															value="${sub_folder_id}"
+															data-bs-target="#collapse-${sub_folder_id}"
+															onclick="directory_toggle(${sub_folder_id})"
 														></button>
-													</form>
+													</div>
 												</div>
 											</div>
-											<div class="accordian-collapse collapse${show}" id="folder${sub_folder_id}">
+											<div class="accordian-collapse collapse${show}" id="collapse-${sub_folder_id}">
 												<div class="accordian-body" style="padding-left:15px">`
 													%><%- directory_element %><%
 													generateDirectory(directory[sub_folder], level + 1, sub_folder_path)
@@ -115,8 +113,7 @@
 								document_window += `
 								<div class="col-auto">
 									<form class="draggable file" action="/LoadDocument" method="post" onmousedown="updateDraggable(this)">
-										<button
-											class="card bg-transparent border-0"
+										<button class="card bg-transparent border-0"
 											type="submit"
 											name="file"
 											value="${dir_files.folder}/${document}"
@@ -138,11 +135,6 @@
 
 			</div>
 		</div>
-		<form action="/MoveItem" method="post" id="move-item" hidden>
-			<input id="move-item-type" name="type">
-			<input id="move-item-src"  name="source">
-			<input id="move-item-dest" name="destination">
-		</form>
 	</div>
 </body>
 <footer>
