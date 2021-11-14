@@ -1,3 +1,5 @@
+const CLICK_VS_DRAG_THRESHOLD = 12;
+
 function elementIsEmpty(el) {
     return (/^(\s|&nbsp;)*$/.test(el.innerHTML));
 }
@@ -110,7 +112,8 @@ document.onmousemove = () => {
 	mousePos[0] = window.event.clientX;
 	mousePos[1] = window.event.clientY;
 	if (drag) {
-		enableClick = false;
+		if (CLICK_VS_DRAG_THRESHOLD < Math.abs(mousePos[0] - startPos[0] - dragPos[0]) + Math.abs(mousePos[1] - dragPos[1] - startPos[1]))
+			enableClick = false;
 	
 		let under_mouse = document.elementsFromPoint(mousePos[0], mousePos[1])
 		for (let element of under_mouse) {
