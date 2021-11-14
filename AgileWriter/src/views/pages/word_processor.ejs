@@ -41,7 +41,7 @@
 								<p id="docDirec" name="docDirec" class="lead text-truncate"><%=document_directory%></p>
 							</form>
 						<% }else{ %> <!--Separate form for a new document being saved-->
-							<form method="POST" action="/Editor/SaveDocument" id="saveDocument">
+							<form method="POST" action="/SaveDocument" id="saveDocument">
 								<input id="documentContents" name="documentContents" hidden value="">
 								<input id="documentTitle" name="documentTitle" hidden value="">
 								<input id="documentDirectory" name="documentDirectory" hidden value="">
