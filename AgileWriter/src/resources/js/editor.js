@@ -29,12 +29,9 @@ function getDocument() {
     document.getElementById("documentContents").setAttribute("value", stringContents);
 
     var form = document.getElementById("saveDocument");
-
     var title = document.getElementById("docTitle").value;
-    if(!title) {
-        title = document.getElementById("docTitle").innerHTML;
+    if(!title) title = document.getElementById("docTitle").innerHTML;
         
-    }
     console.log(title);
     document.getElementById("documentTitle").setAttribute("value", title);
 

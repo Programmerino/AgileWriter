@@ -38,62 +38,120 @@ app.get('/', checkNotAuthenticated, function(req, res) {
 
 
 app.get('/Documents*', checkNotAuthenticated, function(req, res) {
-	let current = req.originalUrl.substring(1+req.originalUrl.lastIndexOf('/')).replace(/-/g,' ');
-	let path = req.originalUrl.replace("/Documents","root").replace(/-/g,' ');
-	let depth = (path.match(/\//g) || []).length + 1;
+	let url = req.originalUrl;
+	if (url[url.length-1] == '/') url = url.substring(0, url.length-1);
+	let dir_current = url.substring(1 + url.lastIndexOf('/')).replace(/-/g,' ');
+	let dir_path    = url.replace("/Documents","");
+	let dir_depth   = (dir_path.match(/\//g) || []).length + 1;
 	
 
-	Promise.all([
+	Promise.allSettled([
 		postgres.query(`
-			SELECT documents.*
-			FROM users
-			RIGHT JOIN documents
-			ON id=user_id
-			WHERE username='${req.user.username}'
-			AND folder='${path}';
-		`),
+			SELECT parent_id, folder_id, folder_name, title, collapsed
+			FROM file_directory AS dir LEFT JOIN documents AS doc
+			ON folder = folder_id AND dir.user_id = doc.user_id
+			
+			GROUP BY dir.user_id, parent_id, folder_id, folder_name, title, collapsed
+			HAVING dir.user_id = ${req.user.id} AND parent_id <> folder_id
+			ORDER BY parent_id,  folder_id, title DESC
+		;`),
 		postgres.query(`
-			SELECT ARRAY_AGG(directory) AS root_directory
+			SELECT folder,
+			ARRAY_AGG(title) AS files
 			FROM (
-				SELECT directory
+				SELECT folder, title
+				FROM documents
+				WHERE user_id = ${req.user.id}
+				ORDER BY folder, title
+			) AS documents
+			GROUP BY folder
+			ORDER BY folder
+		;`),
+		postgres.query(`
+			SELECT parent_id AS parent,
+			ARRAY_AGG(folder_id) AS folders
+			FROM (
+				SELECT parent_id, folder_id
 				FROM file_directory
-				WHERE user_id=${req.user.id}
-				GROUP BY directory
-				ORDER BY directory
-			) AS ordered_directory;
-		`),
-		postgres.query(`
-			SELECT directory, collapsed
-			FROM file_directory
-			WHERE user_id=${req.user.id}
-			ORDER BY directory;
-		`),
-		postgres.query(`
-			SELECT user_id, directory
-			FROM file_directory
-			WHERE user_id=${req.user.id}
-			AND hash_id='UNINITIALIZED';
-		`)
+				WHERE user_id = ${req.user.id}
+				AND parent_id <> folder_id
+				ORDER BY parent_id, folder_id
+			) as directory
+			GROUP BY parent
+		;`)
 	])
-	.then((batch) => {
-		let file_system = {}
-		let file_system_state = {}
-		file_system[ROOT_DIR_NICKNAME] = {}
-		batch[1].rows[0].root_directory.forEach(folder => {
-			folder = folder.split('/');
-			let root = folder.shift();
-			let current_directory = file_system[ROOT_DIR_NICKNAME]
-			if (root !== 'root') throw new Error(folder + "is not organized under root!")
-			else while (folder.length) {
-				let subfolder = folder.shift();
-				current_directory[subfolder] = {};
-				current_directory = current_directory[subfolder];
+	.then(batch => {
+		let directory 		= batch[0].value.rows;
+		let current_files 	= batch[1].value.rows;
+		let current_folders = batch[2].value.rows;
+
+		let map_path = {};
+		let map_state = {};
+		let map_parent = {};
+		let root_directory = {};
+		let ordered_directory = {};
+
+		ordered_directory[0] = {};
+		root_directory[ROOT_DIR_NICKNAME] = ordered_directory[0];
+		map_parent[0] = 0;
+		map_path[0] = '';
+		map_path[map_path[0]] = 0;
+		
+		// Child folders cannot be initialized before parent folders.
+		// The following for loop ensures they're visited in the correct order.
+		let i = 0;
+		let ordered_set = [];
+		let found_set = {};
+		let stray_set = {};
+		let stray_index = {};
+		found_set[0] = true;
+
+		directory.forEach(folder => {
+			ordered_directory[folder.folder_id] = {}
+			if (found_set[folder.parent_id]) {
+				ordered_set.push(i++);
+				if (!found_set[folder.folder_id]) {
+					found_set[folder.folder_id] = true;
+					Object.keys(stray_set).forEach(stray_id => {
+						if (stray_set[stray_id] == folder.folder_id) {
+							found_set[stray_id] = true;
+							ordered_set.push(stray_index[stray_id]);
+							delete stray_set[stray_id];	
+						}
+					});
+				}
+			} else  {
+				stray_set[folder.folder_id] = folder.parent_id;
+				stray_index[folder.folder_id] = i++;
 			}
 		});
-		batch[2].rows.forEach(folder_path => {
-			let valid_path = folder_path.directory.replace('root','').replace(/ /g,'-');
-			file_system_state[valid_path] = folder_path.collapsed;
-		});
+
+		for (let i=0; i<ordered_set.length; i++) {
+			let folder = directory[ordered_set[i]];
+			if (folder.folder_id != folder.parent_id)
+			{
+				ordered_directory[folder.parent_id][folder.folder_name] = ordered_directory[folder.folder_id];
+				map_path[folder.folder_id] = map_path[folder.parent_id] + '/' + folder.folder_name.replace(/ /g,'-');
+				map_path[map_path[folder.folder_id]] = folder.folder_id;
+				map_state[folder.folder_id] = folder.collapsed;
+				map_parent[folder.folder_id] = folder.parent_id;
+			}
+		};
+
+		let dir_files, dir_folders, next_dir;
+		let dir_id = map_path[dir_path];
+		
+		while (!dir_files && (next_dir = current_files.shift()))
+			if (dir_id == next_dir.folder)
+				dir_files = next_dir;
+
+		while (!dir_folders && (next_dir = current_folders.shift()))
+			if (dir_id == next_dir.parent)
+				dir_folders = next_dir
+		
+		if (!dir_files)   dir_files   = {folder:-1, files:  []};
+		if (!dir_folders) dir_folders = {parent:-1, folders:[]};
+		
 		res.render('pages/user_docs', {
 			page_scripts: [
 				{src:'/resources/js/docs.js'}
@@ -101,26 +159,17 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 			page_link_tags: [
 				{rel:'stylesheet', href:'/resources/css/user_docs.css'}
 			],
-			user_docs: batch[0].rows,
-			user_folders: file_system,
-			dir_state: file_system_state,
-			dir_current: current,
-			dir_path: path.replace('root','').replace(/ /g,'-'),
-			dir_depth: depth
-		})
-		batch[3].rows.forEach(folder => {
-			bcrypt
-				.hash(folder.directory, 1)
-				.then((hash, err) => {
-					let replace_letter = String.fromCharCode(65+Math.floor(Math.random()*25.99))
-					hash = hash.replace(/[\$\/\.\\\(\)]/g,replace_letter);
-					postgres.query(`
-					UPDATE file_directory
-					SET hash_id='${hash}'
-					WHERE user_id=${req.user.id}
-					AND directory='${folder.directory}'
-				`)})
-				.catch(err => console.log(err));
+			user_folders: 	root_directory,
+			map_path: 		map_path,
+			map_state: 		map_state,
+			map_parent: 	map_parent,
+			dir_current: 	dir_current,
+			dir_id:			dir_id,
+			dir_path: 		dir_path,
+			dir_depth: 		dir_depth,
+			dir_files: 		dir_files,
+			dir_folders: 	dir_folders,
+			root_nickname: 	ROOT_DIR_NICKNAME
 		})
 	})
 	.catch(error => {
@@ -136,13 +185,13 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 	});
 });
 
-app.post('/Documents/UpdateState', checkNotAuthenticated, function (req, res) {
-	let directory = "root" + req.body.folder.replace(/-/g," ");
+app.post('/DocumentBrowser/UpdateState', checkNotAuthenticated, function (req, res) {
+	let folder_id = req.body.folder;
 	postgres
 		.query(`
 			UPDATE file_directory
 			SET collapsed = NOT collapsed
-			WHERE directory='${directory}'
+			WHERE folder_id='${folder_id}'
 		`)
 		.catch(err => console.log(err));
 });
@@ -173,52 +222,42 @@ app.get('/Editor', checkNotAuthenticated, function(req, res) {
 });
 
 app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
-	try {
-		postgres.query(`
-			SELECT directory
-			FROM file_directory
-			WHERE user_id=${req.user.id}
-			AND hash_id='${req.params.folder}';
-		`)
-		.then((results, err) => {
-			let fileDirec = results.rows[0].directory;
-			let docTitleParsed = simpleParseSingleQuote(req.params.file);
-			postgres.query(`
-				SELECT delta
-				FROM documents
-				WHERE user_id=${req.user.id}
-				AND folder='${results.rows[0].directory}'
-				AND title='${docTitleParsed}';
-			`)
-			.then((results, err) => {
-				res.render('pages/word_processor', {
-					page_scripts: [ // Quill.js library
-						{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
-						{src:"/resources/js/editor.js"},
-						{	// Katex Library
-							src:"https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.js",
-							integrity:"sha384-GxNFqL3r9uRJQhR+47eDxuPoNE7yLftQM8LcxzgS4HT73tp970WS/wV5p8UzCOmb",
-							crossorigin:"anonymous"
-						}
-					],
-					page_link_tags: [
-						{rel:'stylesheet', href:'https://cdn.quilljs.com/1.3.6/quill.snow.css'},
-						{rel:'stylesheet', href:'/resources/css/editor.css'},
-						{rel:'preconnect', href:'https://fonts.googleapis.com'},
-						{rel:'preconnect', href:'https://fonts.gstatic.com', crossorigin:true},
-						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Abel&family=Amatic+SC&family=Andada+Pro&family=Anton&family=Bebas+Neue&family=Birthstone&family=Caveat&family=Crimson+Text&family=Dancing+Script&display=swap'},
-						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Dosis&family=Ephesis&family=Explora&family=Festive&family=Gluten&family=Heebo&family=Henny+Penny&family=Inconsolata&family=Indie+Flower&family=Josefin+Sans&display=swap'},
-						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
-						{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
-					],
-					document_directory: fileDirec,
-					document_title: req.params.file,
-					document_delta: JSON.stringify(results.rows[0].delta)
-				});
-			})
-		})
-	}
-	catch(error) {
+	let folder_id = req.params.folder.replace(/%20/g,' ');
+	let file = req.params.file;
+	postgres.query(`
+		SELECT delta
+		FROM documents
+		WHERE user_id=${req.user.id}
+		AND folder='${folder_id}'
+		AND title='${file}';
+	`)
+	.then((results, err) => {
+		res.render('pages/word_processor', {
+			page_scripts: [ // Quill.js library
+				{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
+				{src:"/resources/js/editor.js"},
+				{	// Katex Library
+					src:"https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.js",
+					integrity:"sha384-GxNFqL3r9uRJQhR+47eDxuPoNE7yLftQM8LcxzgS4HT73tp970WS/wV5p8UzCOmb",
+					crossorigin:"anonymous"
+				}
+			],
+			page_link_tags: [
+				{rel:'stylesheet', href:'https://cdn.quilljs.com/1.3.6/quill.snow.css'},
+				{rel:'stylesheet', href:'/resources/css/editor.css'},
+				{rel:'preconnect', href:'https://fonts.googleapis.com'},
+				{rel:'preconnect', href:'https://fonts.gstatic.com', crossorigin:true},
+				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Abel&family=Amatic+SC&family=Andada+Pro&family=Anton&family=Bebas+Neue&family=Birthstone&family=Caveat&family=Crimson+Text&family=Dancing+Script&display=swap'},
+				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Dosis&family=Ephesis&family=Explora&family=Festive&family=Gluten&family=Heebo&family=Henny+Penny&family=Inconsolata&family=Indie+Flower&family=Josefin+Sans&display=swap'},
+				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
+				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
+			],
+			document_directory: '',
+			document_title: file.replace(/-/g,' '),
+			document_delta: JSON.stringify(results.rows[0].delta)
+		});
+	})
+	.catch(error => {
 		console.log(error);
 		res.render('pages/user_account_page', {
 			user: 'AN ERROR HAS OCCURRED',
@@ -228,23 +267,7 @@ app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
 			count_user_prompts: 0,
 			count_user_words: 1337
 		});
-	};
-});
-
-app.post('/Editor/LoadDocument', checkNotAuthenticated, function(req, res) {
-	let delimiter = req.body.file.lastIndexOf('/');
-	let path = req.body.file.substring(0,delimiter);
-	let file = req.body.file.substring(delimiter+1);
-	postgres.query(`
-		SELECT hash_id
-		FROM file_directory
-		WHERE user_id=${req.user.id}
-		AND directory='${path}';
-	`)
-	.then((results, err) => {
-		let folder_id = results.rows[0].hash_id;
-		res.redirect(`/Editor/${folder_id}/${file}`)
-	})
+	});
 });
 
 function simpleParseSingleQuote(doc){
@@ -259,12 +282,44 @@ function simpleParseSingleQuote(doc){
 	return newDoc;
 }
 
-app.post('/Editor/SaveDocument', checkNotAuthenticated, (req,res)=>{
+app.post('/MoveItem', checkNotAuthenticated, function(req, res) {
+	if (req.body.type === 'folder') {
+		postgres.query(`
+			UPDATE file_directory
+			SET parent_id = ${req.body.destination}
+			WHERE user_id = ${req.user.id}
+			AND folder_id = ${req.body.source}
+		;`)
+		.catch(error => console.log(error));
+	} else {
+		let source     = req.body.source;
+		let delimiter  = source.search("/");
+		let src_folder = source.substring(0,  delimiter);
+		let src_file   = source.substring(1 + delimiter);
+		postgres.query(`
+			UPDATE documents
+			SET folder = ${req.body.destination}
+			WHERE user_id = ${req.user.id}
+			AND folder = ${src_folder}
+			AND title = '${src_file}'
+		;`)
+		.catch(error => console.log(error));
+	}
+});
+
+app.post('/LoadDocument', checkNotAuthenticated, function(req, res) {
+	let delimiter = req.body.file.lastIndexOf('/');
+	let folder_id = req.body.file.substring(0,delimiter);
+	let file = req.body.file.substring(delimiter+1);
+	res.redirect(`/Editor/${folder_id}/${file}`)
+});
+
+app.post('/SaveDocument', checkNotAuthenticated, (req,res)=>{
 	let{documentContents, documentTitle, documentDirectory, savedDocBool} = req.body;
 	documentTitle = simpleParseSingleQuote(documentTitle);
 	documentContents = simpleParseSingleQuote(documentContents);
-	//console.log(documentContents);
 	documentContentsJSON = JSON.parse(documentContents);
+	//console.log(documentContents);
 	//console.log(documentTitle);
 	//console.log(documentDirectory);
 

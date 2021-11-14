@@ -13,59 +13,47 @@
 						<% let generateDirectory = function(directory, level, path) {
 							let sub_folders = Object.keys(directory)
 							sub_folders.forEach(sub_folder => {
-								let sub_folder_id = sub_folder.replace(/ /g, '-')
-								let sub_folder_path = level ? path + '/' + sub_folder_id : '';
-								let state = dir_state[sub_folder_path]
-								let show = (state) ? '' : ' show'
-								let hide = (state) ? ' collapsed' : ''
-								if (Object.keys(directory[sub_folder]).length)
-								{
-									let directory_element = `
-										<div class="accordian accordian-flush">
-											<div class="accordian-item">
-												<div class="accordian-header" id="${sub_folder_id}_directory">
-													<div class="btn-group w-100" role="expand" aria-label="Expand directory">
-														<a
-															class="list-group-item list-group-item-action text-start w-100 border-0 ps-0"
-															type="button"
-															href="/Documents${sub_folder_path}"
-														>
-															${sub_folder}
-														</a>
-														<form action="/Documents/UpdateState" method="post">
-															<button
-																class="accordion-button${hide} w-auto py-2 px-1"
-																type="submit"
-																data-bs-toggle="collapse"
-																data-bs-target="#${sub_folder_id}"
-																name="folder"
-																value="${sub_folder_path}"
-															></button>
-														</form>
-													</div>
-												</div>
-												<div class="accordian-collapse collapse${show}" id="${sub_folder_id}">
-													<div class="accordian-body" style="padding-left:20px">`
-														%><%- directory_element %><%
-														generateDirectory(directory[sub_folder], level + 1, sub_folder_path)
-														directory_element = `
-													</div>
+								let sub_folder_name = sub_folder.replace(/ /g, '-');
+								let sub_folder_path = path + '/' + sub_folder_name;
+								sub_folder_path = sub_folder_path.replace('/' + root_nickname.replace(/ /g, '-'),'')
+								let sub_folder_id = map_path[sub_folder_path]
+								let state = map_state[sub_folder_id];
+								let expandable = (Object.keys(directory[sub_folder]).length) ? '' : ' hidden';
+								let show = (state) ? '' : ' show';
+								let hide = (state) ? ' collapsed' : '';
+								let directory_element = `
+									<div class="accordian accordian-flush" id="folder-${sub_folder_id}-directory">
+										<div class="accordian-item">
+											<div class="accordian-header">
+												<div class="btn-group w-100" role="expand" aria-label="Expand directory">
+													<a
+														class="list-group-item list-group-item-action text-start w-100 border-0 ps-0"
+														type="button"
+														href="/Documents${sub_folder_path}"
+													>${sub_folder}</a>
+													<form action="/DocumentBrowser/UpdateState" method="post" id="folder-${sub_folder_id}-toggle"${expandable}>
+														<button
+															class="accordion-button${hide} w-auto py-2 px-1"
+															type="submit"
+															data-bs-toggle="collapse"
+															data-bs-target="#folder${sub_folder_id}"
+															name="folder"
+															value="${sub_folder_id}"
+														></button>
+													</form>
 												</div>
 											</div>
-										</div>`
-									%><%- directory_element %><%
-								}
-								else {
-									let terminating_element = `
-										<a
-											class="list-group-item list-group-item-action text-start border-0 py-2 px-0"
-											type="button"
-											href="/Documents${sub_folder_path}"
-										>
-											${sub_folder}
-										</a>`
-									%><%- terminating_element %><%
-								}
+											<div class="accordian-collapse collapse${show}" id="folder${sub_folder_id}">
+												<div class="accordian-body" style="padding-left:15px">`
+													%><%- directory_element %><%
+													generateDirectory(directory[sub_folder], level + 1, sub_folder_path)
+													directory_element = `
+												</div>
+											</div>
+										</div>
+									</div>`
+								%><%- directory_element %><%
+								
 							});
 						} %>
 						<%  generateDirectory(user_folders, 0, ''); %>
@@ -91,52 +79,52 @@
 					<div class="card-header">
 						<h3><%= dir_current %></h3>
 					</div>
-					<div class="container-fluid">
-						<div class="row"  id="document_window">
+					<div class="container-fluid" id=<%=`folder-${dir_id}`%>>
+						<div class="row"  id="document_window"">
 							<% let document_window = ''; %>
-							<% Object.keys(dir_state).forEach(folder => {
-								let ref_path = dir_path.length ? dir_path : '/'
-								let check = folder.replace(ref_path,'');
-								if (check != folder)
-								{
-									if (check[0] === '/') check = check.substring(1);
-									if (check == check.replace(/\//g,''))
-									{
-										let folder_image = "/resources/img/folder.png";
-										if (!check) {
-											check = '...';
-											folder = folder.replace(dir_current.replace(/ /g,'-'),'');
-											folder = folder.substring(0,folder.length-1);
-											folder_image = "/resources/img/back_folder.png";
-										}
-										document_window += `
-										<div class="col-auto">
-											<a class="card bg-transparent border-0" href="/Documents${folder}" style="width:200px">
-												<div class="card-body bg-transparent text-center">
-													<img src="${folder_image}" width=150 height=150>
-												</div>
-												<div class="card-footer bg-transparent text-center">${check}</div>
-											</a>
+							<% if (dir_depth > 1) {
+								let folder_image = "/resources/img/back_folder.png";
+								let folder_path = map_path[map_parent[dir_id]]
+								document_window += `
+								<div class="col-auto" id="folder-${map_parent[dir_id]}">
+									<a class="draggable folder card bg-transparent border-0" href="/Documents${folder_path}">
+										<div class="card-body bg-transparent text-center">
+											<img src="${folder_image}" width=150 height=150 ondragStart="return false">
 										</div>
-										`
-									}
-								}
+										<div class="card-footer bg-transparent text-center">...</div>
+									</a>
+								</div>
+								`
+							}%>
+							<% dir_folders.folders.forEach(folder => {
+								let folder_image = "/resources/img/folder.png";
+								let folder_path = map_path[folder];
+								let folder_name = folder_path.replace(map_path[dir_id]+'/','').replace(/-/g,' ');
+								document_window += `
+								<div class="col-auto" id="folder-${folder}">
+									<a class="draggable folder card bg-transparent border-0" href="/Documents${folder_path}" onmousedown="updateDraggable(this)">
+										<div class="card-body bg-transparent text-center">
+											<img src="${folder_image}" width=150 height=150 ondragStart="return false">
+										</div>
+										<div class="card-footer bg-transparent text-center">${folder_name}</div>
+									</a>
+								</div>
+								`
 							}); %>
-							<% user_docs.forEach(document => {
+							<% dir_files.files.forEach(document => {
 								document_window += `
 								<div class="col-auto">
-									<form action="/Editor/LoadDocument" method="post">
+									<form class="draggable file" action="/LoadDocument" method="post" onmousedown="updateDraggable(this)">
 										<button
 											class="card bg-transparent border-0"
-											style="width:200px"
 											type="submit"
 											name="file"
-											value="root${dir_path.replace(/-/g,' ')}/${document.title}"
+											value="${dir_files.folder}/${document}"
 										>
 											<div class="card-body bg-transparent text-center">
-												<img src="/resources/img/document.png" width=150 height=150>
+												<img src="/resources/img/document.png" width=150 height=150 ondragStart="return false">
 											</div>
-											<div class="card-footer bg-transparent text-center">${document.title}</div>
+											<div class="card-footer bg-transparent text-center">${document}</div>
 										</button>
 									</form>
 								</div>
@@ -150,6 +138,11 @@
 
 			</div>
 		</div>
+		<form action="/MoveItem" method="post" id="move-item" hidden>
+			<input id="move-item-type" name="type">
+			<input id="move-item-src"  name="source">
+			<input id="move-item-dest" name="destination">
+		</form>
 	</div>
 </body>
 <footer>

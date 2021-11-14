@@ -16,7 +16,8 @@
 		"node-pre-gyp": "^0.17.0",
 		"passport": "^0.5.0",
 		"passport-local": "^1.0.0",
-		"pg": "^8.7.1"
+		"pg": "^8.7.1",
+		"pg-connection-string":  "^2.5.0"
 	},
 	"devDependencies": {
 		"nodemon": "^2.0.14",
@@ -32,6 +33,6 @@
 		"build": "dotnet fable src && webpack",
 		"watch-compile": "dotnet fable watch src",
 		"start": "node src/server.js",
-		"dev": "nodemon src/server.js"
+		"dev": "nodemon src/server.js -L"
 	}
 }

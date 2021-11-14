@@ -13,3 +13,16 @@
 	background-image: url('../img/dash-square.svg');
 	transform: none;
 }
+
+.accordian-collapse {
+	border-left:outset;
+	border-color:antiquewhite
+}
+
+.col-auto {
+	border-radius: 40px;
+}
+
+.card-footer {
+	width: 100%;
+}
