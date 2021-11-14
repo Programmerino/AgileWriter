@@ -36,14 +36,14 @@
 															class="accordion-button${hide} w-auto py-2 px-1"
 															type="submit"
 															data-bs-toggle="collapse"
-															data-bs-target="#folder-${sub_folder_id}"
+															data-bs-target="#folder${sub_folder_id}"
 															name="folder"
 															value="${sub_folder_id}"
 														></button>
 													</form>
 												</div>
 											</div>
-											<div class="accordian-collapse collapse${show}" id="folder-${sub_folder_id}">
+											<div class="accordian-collapse collapse${show}" id="folder${sub_folder_id}">
 												<div class="accordian-body" style="padding-left:15px">`
 													%><%- directory_element %><%
 													generateDirectory(directory[sub_folder], level + 1, sub_folder_path)
