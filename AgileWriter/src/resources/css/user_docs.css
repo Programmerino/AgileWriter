@@ -23,6 +23,12 @@
 	border-radius: 40px;
 }
 
+.col-auto input {
+	border-left-width: 0px;
+	border-right-width: 0px;
+	border-bottom-width: 0px;
+}
+
 .card-footer {
 	width: 100%;
 }

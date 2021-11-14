@@ -188,14 +188,90 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 });
 
 app.post('/DocumentBrowser/UpdateState', checkNotAuthenticated, function (req, res) {
-	let folder_id = parseInt(req.body.folder);
 	postgres
 		.query(`
 			UPDATE file_directory
 			SET collapsed = NOT collapsed
-			WHERE folder_id='${folder_id}'
+			WHERE user_id = ${req.user.id}
+			AND folder_id = ${req.body.folder}
 		`)
+		.then((results,err) => {
+			res.send({success:"Updated Successfully", status: 200});
+		})
 		.catch(err => console.log(err));
+});
+
+app.post('/DocumentBrowser/RenameFolder', checkNotAuthenticated, function (req, res)  {
+	postgres
+		.query(`
+			UPDATE file_directory
+			SET folder_name = '${req.body.new_name}'
+			WHERE user_id = ${req.user.id}
+			AND folder_id = ${req.body.folder}
+		;`)
+		.then((results,err) => {
+			res.send({success:"Updated Successfully", status: 200});
+		})
+		.catch(err => {
+			console.log(err)
+			res.send({failed:"Could not Update...", status: 409});
+		});
+});
+
+app.post('/DocumentBrowser/RenameFile', checkNotAuthenticated, function (req, res) {
+	postgres
+		.query(`
+			UPDATE documents
+			SET title = '${req.body.new_name}'
+			WHERE title = '${req.body.old_name}'
+			AND user_id = ${req.user.id}
+			AND folder  = ${req.body.folder}
+		;`)
+		.then((results,err) => {
+			res.send({success:"Updated Successfully", status: 200});
+		})
+		.catch(err => {
+			console.log(err)
+			res.send({failed:"Could not Update...", status: 409});
+		});
+});
+
+app.post('/MoveItem', checkNotAuthenticated, function(req, res) {
+	if (req.body.type === 'folder') {
+		postgres.query(`
+			UPDATE file_directory
+			SET parent_id = ${req.body.destination}
+			WHERE user_id = ${req.user.id}
+			AND folder_id = ${req.body.source}
+		;`)
+		.then((results,err) => {
+			res.send({success:"Updated Successfully", status: 200});
+		})
+		.catch(err => {
+			console.log(err)
+			res.send({failed:"Could not Update...", status: 409});
+		});
+	} else {
+		console.log(req.body);
+		let source     = req.body.source;
+		let delimiter  = source.search("/");
+		let src_folder = source.substring(0,  delimiter);
+		let src_file   = source.substring(1 + delimiter);
+		postgres.query(`
+			UPDATE documents
+			SET folder = ${req.body.destination}
+			WHERE user_id = ${req.user.id}
+			AND folder = ${src_folder}
+			AND title = '${src_file}'
+		;`)
+		.then((results,err) => {
+			res.send({success:"Updated Successfully", status: 200});
+		})
+		.catch(err => {
+			console.log(err)
+			res.send({failed:"Could not Update...", status: 409});
+		});
+	}
 });
 
 app.get('/Editor', checkNotAuthenticated, function(req, res) {
@@ -283,31 +359,6 @@ function simpleParseSingleQuote(doc){
 	}
 	return newDoc;
 }
-
-app.post('/MoveItem', checkNotAuthenticated, function(req, res) {
-	if (req.body.type === 'folder') {
-		postgres.query(`
-			UPDATE file_directory
-			SET parent_id = ${req.body.destination}
-			WHERE user_id = ${req.user.id}
-			AND folder_id = ${req.body.source}
-		;`)
-		.catch(error => console.log(error));
-	} else {
-		let source     = req.body.source;
-		let delimiter  = source.search("/");
-		let src_folder = source.substring(0,  delimiter);
-		let src_file   = source.substring(1 + delimiter);
-		postgres.query(`
-			UPDATE documents
-			SET folder = ${req.body.destination}
-			WHERE user_id = ${req.user.id}
-			AND folder = ${src_folder}
-			AND title = '${src_file}'
-		;`)
-		.catch(error => console.log(error));
-	}
-});
 
 app.post('/LoadDocument', checkNotAuthenticated, function(req, res) {
 	let delimiter = req.body.file.lastIndexOf('/');

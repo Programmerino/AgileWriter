@@ -28,6 +28,7 @@
 												<div class="btn-group w-100" role="expand" aria-label="Expand directory">
 													<a
 														class="list-group-item list-group-item-action text-start w-100 border-0 ps-0"
+														id="rename-target-${sub_folder_id}"
 														type="button"
 														href="/Documents${sub_folder_path}"
 													>${sub_folder}</a>
@@ -100,30 +101,34 @@
 								let folder_name = folder_path.replace(map_path[dir_id]+'/','').replace(/-/g,' ');
 								document_window += `
 								<div class="col-auto" id="folder-${folder}">
-									<a class="draggable folder card bg-transparent border-0" href="/Documents${folder_path}" onmousedown="updateDraggable(this)">
-										<div class="card-body bg-transparent text-center">
-											<img src="${folder_image}" width=150 height=150 ondragStart="return false">
-										</div>
-										<div class="card-footer bg-transparent text-center">${folder_name}</div>
-									</a>
+									<div class="draggable folder" onmousedown="updateDraggable(this)">
+										<a class="card bg-transparent border-0" href="/Documents${folder_path}">
+											<div class="card-body bg-transparent text-center">
+												<img src="${folder_image}" width=150 height=150 ondragStart="return false">
+											</div>
+										</a>
+										<input class='card-footer bg-transparent text-center' value='${folder_name}' id='rename-${folder}'>
+									</div>
 								</div>
 								`
 							}); %>
 							<% dir_files.files.forEach(document => {
 								document_window += `
-								<div class="col-auto">
-									<form class="draggable file" action="/LoadDocument" method="post" onmousedown="updateDraggable(this)">
-										<button class="card bg-transparent border-0"
-											type="submit"
-											name="file"
-											value="${dir_files.folder}/${document}"
-										>
-											<div class="card-body bg-transparent text-center">
-												<img src="/resources/img/document.png" width=150 height=150 ondragStart="return false">
-											</div>
-											<div class="card-footer bg-transparent text-center">${document}</div>
-										</button>
-									</form>
+								<div class="col-auto" id="file-${document.replace(/ /g,'-')}">
+									<div class="draggable file" onmousedown="updateDraggable(this)">
+										<form action="/LoadDocument" method="post">
+											<button class="card bg-transparent border-0"
+												type="submit"
+												name="file"
+												value="${dir_files.folder}/${document}"
+											>
+												<div class="card-body bg-transparent text-center">
+													<img src="/resources/img/document.png" width=150 height=150 ondragStart="return false">
+												</div>
+											</button>
+										</form>
+										<input class='card-footer bg-transparent text-center' value='${document}' id='rename-${document.replace(/ /g,'-')}'">
+									</div>
 								</div>
 								`
 							}); %>

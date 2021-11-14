@@ -58,11 +58,6 @@ function createNewFolder() {
 }
 
 
-
-
-
-
-
 // ------------- POSTING WITH AJAX ----------------
 
 function directory_toggle(folder_id) {
@@ -74,9 +69,79 @@ function directory_toggle(folder_id) {
 	});
 }
 
+var dir_contents = document.getElementById("document_window").children;
+var old_name;
+
+for (let i=0; i<dir_contents.length-1; i++) {
+	let target_id = dir_contents[i].id
+	let target = dir_contents[i].lastElementChild.lastElementChild;
+	target.addEventListener("focusin", event => {old_name = event.target.value;})
+	target.addEventListener("focusout", event => {item_rename(target_id);})
+	target.addEventListener("keyup", event => {
+		event.preventDefault();
+		if (event.key === "Enter") target.blur();
+	});
+}
+
+function item_rename(target_id) {
+	let type = target_id.substring(0,  target_id.search('-'));
+	let id   = target_id.substring(1 + target_id.search('-'));
+	let target = document.getElementById('rename-' + id);
+	let link_target = target.parentElement.firstElementChild;
+	let parent = document.getElementById('document_window').parentElement.id.substring(7);
+	let new_name = target.value;
+	target.blur();
+	if (type == 'folder') {
+		let matching_target = document.getElementById('rename-target-' + id)
+		let old_path = link_target.href;
+		let new_path = old_path.replace(old_name,new_name);
+		matching_target.innerText = new_name;
+		link_target.href = new_path;
+		$.ajax({
+			url: '/DocumentBrowser/RenameFolder',
+			type: 'POST',
+			cache: false,
+			data: {folder: id, new_name: new_name},
+			success: (result) => {
+				if (result.status == 409) {
+					target.value = old_name;
+					matching_target.innerText = old_name;
+					link_target.href = old_path;
+				}
+			},
+			error: () => {
+				target.value = old_name;
+				matching_target.innerText = old_name;
+				link_target.href = old_path;
+			}
+		});
+	} else {
+		link_target = link_target.firstElementChild;
+		let old_link = link_target.value;
+		let new_link = old_link.replace(old_name,new_name.replace(/ /g,'%20'));
+		link_target.value = new_link
+		$.ajax({
+			url: '/DocumentBrowser/RenameFile',
+			type: 'POST',
+			cache: false,
+			data: {folder: parent, old_name: id.replace(/-/g,' '), new_name: new_name},
+			success: (result) => {
+				if (result.status == 409) {
+					target.value = old_name;
+					link_target.value = old_link;
+				}
+			},
+			error: () => {
+				target.value = old_name;
+				link_target.value = old_link;
+			}
+		});
+	}
+}
+
 // --------- START OF DRAG & DROP CODE ------------
 
-var drag = null, hover = null;
+var drag = null, hover = null, temp = null;
 var dragPos = [0,0];
 var mousePos = [0,0];
 var startPos = [0,0];
@@ -87,7 +152,14 @@ for (let icon of document.getElementsByClassName("draggable"))
 	icon.parentElement.style.width = icon.parentElement.offsetWidth + "px";
 
 function updateDraggable(icon) {
-	if (drag === null && icon.innerText != '...') {
+	let valid_drag = true;
+	document.elementsFromPoint(mousePos[0], mousePos[1]).forEach(element => {
+		if (element.tagName === 'INPUT') {
+			valid_drag = false;
+			console.log(element.tagName);
+		}
+	});
+	if (valid_drag && drag === null && icon.innerText != '...') {
 		drag = icon;
 		startZIndex = drag.style.zIndex;
 		startPos[0] = drag.offsetLeft;
@@ -144,18 +216,13 @@ document.onmouseup = (e) => {
 			let folder = drag.classList[1] === "folder"
 			let src  = drag .parentElement.id.replace('folder-','')
 			let dest = hover.parentElement.id.replace('folder-','');
-			if (folder) {
-				document.getElementById("folder-"+dest+"-toggle").hidden = false;
-				document.getElementById("folder-"+dest+"-directory").lastElementChild.lastElementChild.lastElementChild.appendChild(
-					document.getElementById("folder-"+src +"-directory"));
-			}
-			else src = drag.firstElementChild.value;
+			if (!folder) src = drag.firstElementChild.firstElementChild.value;
 
 			let document_window = document.getElementById("document_window");
 			let current_folder = document_window.parentElement.id;
 			let first_folder = document_window.children[1].id;
-			if (first_folder.substring(0,6) === 'folder')
-				document.getElementById(current_folder+'-toggle').hidden = true;
+			
+			temp = drag.parentElement;
 			
 			$.ajax({
 				url: '/MoveItem',
@@ -165,10 +232,23 @@ document.onmouseup = (e) => {
 					type: drag.classList[1],
 					source: src,
 					destination: dest
+				},
+				success: result => {
+					if (result.status == 200) {		
+						temp.remove()
+						if (folder) {
+							document.getElementById("folder-"+dest+"-toggle").hidden = false;
+							document.getElementById("folder-"+dest+"-directory").lastElementChild.lastElementChild.lastElementChild.appendChild(
+								document.getElementById("folder-"+src +"-directory"));
+							if (first_folder.substring(0,6) === 'folder')
+								document.getElementById(current_folder+'-toggle').hidden = true;
+						}
+					}
+				},
+				error: results => {
+					
 				}
 			});
-
-			drag.parentElement.remove()
 			drag = hover = null;
 		} else {
 			drag.style.backgroundColor = 'transparent';
