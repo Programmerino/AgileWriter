@@ -556,12 +556,14 @@ app.post('/Register', async (req, res)=>{
 					)
 					.then((err, results) => {
 							postgres.query(`
-							INSERT INTO file_directory (user_id, directory)
-							SELECT id, folder FROM users
-							RIGHT JOIN (VALUES 
-								('${username}', 'root'),
-								('${username}', 'root/Personal')
-							) AS dir (owner, folder)
+							
+							INSERT INTO file_directory (user_id, parent_id, folder_id, folder_name)
+							SELECT id, parent_id, folder_id, folder_name FROM users
+							RIGHT JOIN (
+							VALUES
+								('${username}',0,  0, 'root'),
+								('${username}',  0,  1, 'Personal')
+							) AS dir (owner, parent_id, folder_id, folder_name)
 							ON owner = username;`)
 							.then((results,err)=>{
 								console.log("HELLLLLO THEREEEEEEEEE3");
