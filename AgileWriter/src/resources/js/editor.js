@@ -35,7 +35,11 @@ function getDocument() {
     console.log(title);
     document.getElementById("documentTitle").setAttribute("value", title);
 
+    var selectedDirectory = document.getElementById("selectDirec");
     var directory = document.getElementById("docDirec").innerHTML;
+    if(selectedDirectory) {
+        directory = selectedDirectory.value - 1;
+    }
     document.getElementById("documentDirectory").setAttribute("value", directory);
     form.submit();
 }

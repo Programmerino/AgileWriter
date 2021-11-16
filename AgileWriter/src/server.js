@@ -275,41 +275,15 @@ app.post('/MoveItem', checkNotAuthenticated, function(req, res) {
 });
 
 app.get('/Editor', checkNotAuthenticated, function(req, res) {
-	res.render('pages/word_processor', {
-		page_scripts: [ // Quill.js library
-			{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
-			{src:"/resources/js/editor.js"},
-			{	// Katex Library
-				src:"https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.js",
-				integrity:"sha384-GxNFqL3r9uRJQhR+47eDxuPoNE7yLftQM8LcxzgS4HT73tp970WS/wV5p8UzCOmb",
-				crossorigin:"anonymous"
+	postgres.query(`SELECT folder_name FROM file_directory
+	WHERE user_id='${req.user.id}';`)
+	.then((results,err)=>{
+		let userDirecs = [];
+		userDirecsCount = results.rows.length - 1;
+			for(var i = 0; i < results.rows.length; i++){
+				userDirecs[userDirecsCount] = results.rows[i].folder_name;
+				userDirecsCount--;
 			}
-		],
-		page_link_tags: [
-			{rel:'stylesheet', href:'https://cdn.quilljs.com/1.3.6/quill.snow.css'},
-			{rel:'stylesheet', href:'/resources/css/editor.css'},
-			{rel:'preconnect', href:'https://fonts.googleapis.com'},
-			{rel:'preconnect', href:'https://fonts.gstatic.com', crossorigin:true},
-			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Abel&family=Amatic+SC&family=Andada+Pro&family=Anton&family=Bebas+Neue&family=Birthstone&family=Caveat&family=Crimson+Text&family=Dancing+Script&display=swap'},
-			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Dosis&family=Ephesis&family=Explora&family=Festive&family=Gluten&family=Heebo&family=Henny+Penny&family=Inconsolata&family=Indie+Flower&family=Josefin+Sans&display=swap'},
-			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
-			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
-		],
-		document_delta: ''
-	});
-});
-
-app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
-	let folder_id = req.params.folder.replace(/%20/g,' ');
-	let file = req.params.file;
-	postgres.query(`
-		SELECT delta
-		FROM documents
-		WHERE user_id=${req.user.id}
-		AND folder='${folder_id}'
-		AND title='${file}';
-	`)
-	.then((results, err) => {
 		res.render('pages/word_processor', {
 			page_scripts: [ // Quill.js library
 				{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
@@ -330,10 +304,68 @@ app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
 				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
 				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
 			],
-			document_directory: '',
-			document_title: file.replace(/-/g,' '),
-			document_delta: JSON.stringify(results.rows[0].delta)
+			user_directories: userDirecs,
+			document_delta: ''
 		});
+	})
+	
+});
+
+app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
+	let folder_id = req.params.folder.replace(/%20/g,' ');
+	let file = req.params.file;
+	let userDirecs = [];
+	let docDirec = '';
+	postgres.query(`
+		SELECT delta
+		FROM documents
+		WHERE user_id=${req.user.id}
+		AND folder='${folder_id}'
+		AND title='${file}';
+	`)
+	.then((results, err) => {
+		let docDelta = JSON.stringify(results.rows[0].delta);
+		postgres.query(`
+		SELECT folder_name FROM file_directory
+		WHERE user_id='${req.user.id}';`)
+		.then((results, err)=>{
+			userDirecsCount = results.rows.length - 1;
+			for(var i = 0; i < results.rows.length; i++){
+				userDirecs[userDirecsCount] = results.rows[i].folder_name;
+				userDirecsCount--;
+			} //Done a bit oddly to get the folder names into the same order as their id's
+			docDirec = userDirecs[folder_id];
+			console.log(userDirecs);
+			console.log(docDirec);
+			console.log(docDelta);
+			res.render('pages/word_processor', {
+				page_scripts: [ // Quill.js library
+					{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
+					{src:"/resources/js/editor.js"},
+					{	// Katex Library
+						src:"https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.js",
+						integrity:"sha384-GxNFqL3r9uRJQhR+47eDxuPoNE7yLftQM8LcxzgS4HT73tp970WS/wV5p8UzCOmb",
+						crossorigin:"anonymous"
+					}
+				],
+				page_link_tags: [
+					{rel:'stylesheet', href:'https://cdn.quilljs.com/1.3.6/quill.snow.css'},
+					{rel:'stylesheet', href:'/resources/css/editor.css'},
+					{rel:'preconnect', href:'https://fonts.googleapis.com'},
+					{rel:'preconnect', href:'https://fonts.gstatic.com', crossorigin:true},
+					{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Abel&family=Amatic+SC&family=Andada+Pro&family=Anton&family=Bebas+Neue&family=Birthstone&family=Caveat&family=Crimson+Text&family=Dancing+Script&display=swap'},
+					{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Dosis&family=Ephesis&family=Explora&family=Festive&family=Gluten&family=Heebo&family=Henny+Penny&family=Inconsolata&family=Indie+Flower&family=Josefin+Sans&display=swap'},
+					{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
+					{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
+				],
+				document_directory: docDirec,
+				user_directories: userDirecs,
+				document_title: file.replace(/-/g,' '),
+				document_delta: docDelta
+			});
+		});
+		
+		
 	})
 	.catch(error => {
 		console.log(error);
@@ -410,10 +442,12 @@ app.post('/SaveDocument', checkNotAuthenticated, (req,res)=>{
 								})
 				
 			}else{ //If a user is inserting a brand new document
+				//documentDirectory = parseInt(documentDirectory);
+				console.log(documentDirectory);
 				postgres.query(`INSERT INTO documents (user_id, folder, title, delta, created)
 								SELECT id, folder, title, delta, created FROM users
 								RIGHT JOIN (VALUES
-									('${req.user.username}', '${documentTitle}', 'root', '${documentContents}'::jsonb, NOW())
+									('${req.user.username}', '${documentTitle}', '${documentDirectory}'::integer, '${documentContents}'::jsonb, NOW())
 								) AS doc (owner, title, folder, delta, created)
 								ON owner = username;`)
 								.then((results,err)=>{

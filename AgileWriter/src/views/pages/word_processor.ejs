@@ -29,17 +29,22 @@
 				</div>
 				<br>
 				<div class="row d-flex">
-					<div class="col-auto justify-content-center">
-						
+					<div class="col-auto">
 						<% if(docTrue) { %> <!--This is the form for updating an already saved document-->
-							<form method="POST" action="/SaveDocument" id="saveDocument">
-								<input id="documentContents" name="documentContents" hidden value="">
-								<input id="documentTitle" name="documentTitle" hidden value="">
-								<input id="documentDirectory" name="documentDirectory" hidden value="">
-								<input id="savedDocBool" name="savedDocBool" hidden value="true">
-								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Save Document</button>
-								<p id="docDirec" name="docDirec" class="lead text-truncate"><%=document_directory%></p>
-							</form>
+							<div class="col-auto">
+								<form method="POST" action="/SaveDocument" id="saveDocument">
+									<input id="documentContents" name="documentContents" hidden value="">
+									<input id="documentTitle" name="documentTitle" hidden value="">
+									<input id="documentDirectory" name="documentDirectory" hidden value="">
+									<input id="savedDocBool" name="savedDocBool" hidden value="true">
+									<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Save Document</button>
+									
+								</form>
+							</div>
+							
+							
+							
+							
 						<% }else{ %> <!--Separate form for a new document being saved-->
 							<form method="POST" action="/SaveDocument" id="saveDocument">
 								<input id="documentContents" name="documentContents" hidden value="">
@@ -47,11 +52,24 @@
 								<input id="documentDirectory" name="documentDirectory" hidden value="">
 								<input id="savedDocBool" name="savedDocBool" hidden value="false">
 								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Save Document</button>
-								<p id="docDirec" name="docDirec" class="lead">root</p>
+								<p id="docDirec" name="docDirec" class="lead"></p>
+								
 							</form>
+							
 						<% } %>
 					</div>
-					
+					<div class="col-auto">
+						<%if(docTrue) {%>
+							<p id="docDirec" name="docDirec" class="lead text-truncate"><%=document_directory%></p>
+						<%}else{%>
+							<select id="selectDirec" name="selectDirec" class="form-select" aria-label="Default select example">
+								<option selected value="0">Choose a folder to store your file</option>
+								<% for(let i = 0; i < user_directories.length; i++) { %>
+									<option value="<%= i + 1%>"><%=user_directories[i]%></option>
+								<%}%>
+							</select>
+						<%}%>
+					</div>
 					
 				</div>
 			</div> <!--col-->
