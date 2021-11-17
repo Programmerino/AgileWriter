@@ -279,7 +279,7 @@ app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req,res) {
 	let file = req.params.file;
 	postgres.query(`
 		SELECT delta, created
-		FROM documentContents
+		FROM documents
 		WHERE user_id=${req.user.id}
 		AND folder='${folder_id}'
 		AND title='${file}';
