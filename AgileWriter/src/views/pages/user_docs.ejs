@@ -7,7 +7,7 @@
 			<div class="col-md-3 justify-content-center" id="directory_window">
 				<div class="card">
 					<div class="card-header">
-						<h3>Directory</h3>
+						<h3 class="text-danger">Directory</h3>
 					</div>
 					<div class="card-body">
 						<% let generateDirectory = function(directory, level, path) {
@@ -76,7 +76,7 @@
 			<div class="col">
 				<div class="flex-row bg-light">
 					<div class="card-header">
-						<h3><%= dir_current %></h3>
+						<h3 class="text-danger"><%= dir_current %></h3>
 					</div>
 					<div class="container-fluid" id=<%=`folder-${dir_id}`%>>
 						<div class="row"  id="document_window"">

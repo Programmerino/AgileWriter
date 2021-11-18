@@ -76,7 +76,9 @@
 			<div class="col-sm">
 				<div class="flex-row">
 					<table class="table">
-						<thead class="bg-danger" style="color:white;"><tr><td><p class="h4" style="margin:5px">Generate a new...</p></td></d></tr></thead>
+						<div class="card-header">
+							<h3 class="text-danger">Generate a New...</h3>
+						</div>
 						<tr>
 							<td>
 							<form method="POST" action="">
@@ -96,9 +98,9 @@
 				</div>
 				<div class="flex-row overflow-auto">
 					<table class="table">
-						<tr>
-							<th colspan="2" class="bg-danger" style="color:white;" >Document Stats:</th>
-						</tr>
+						<div class="card-header">
+							<h3 class="text-danger">Document Stats</h3>
+						</div>
 						<tr>
 							<td>Date created: </td>
 							<td><%- document_created.toLocaleDateString("en-US"); %></td>
