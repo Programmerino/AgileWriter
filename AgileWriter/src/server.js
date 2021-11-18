@@ -83,7 +83,7 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 		let directory 		  = batch[0].value.rows;
 		let current_files 	  = batch[1].value.rows;
 		let current_folders   = batch[2].value.rows;
-		let root_is_collapsed = batch[0].value.rows.shift().collapsed
+		let root_is_collapsed = batch[0].value.rows.collapsed
 
 		let map_path = {};
 		let map_state = {};
@@ -316,13 +316,11 @@ app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req,res) {
 
 app.get('/Editor', checkNotAuthenticated, function(req, res) {
 	postgres.query(`SELECT folder_name FROM file_directory
-	WHERE user_id='${req.user.id}';`)
+	WHERE user_id='${req.user.id}' ORDER BY folder_id;`)
 	.then((results,err)=>{
 		let userDirecs = [];
-		userDirecsCount = results.rows.length - 1;
 			for(var i = 0; i < results.rows.length; i++){
-				userDirecs[userDirecsCount] = results.rows[i].folder_name;
-				userDirecsCount--;
+				userDirecs[i] = results.rows[i].folder_name;
 			}
 		res.render('pages/word_processor', {
 			page_scripts: [ // Quill.js library
@@ -472,7 +470,7 @@ app.post('/SaveDocument', checkNotAuthenticated, (req,res)=>{
 				postgres.query(`INSERT INTO documents (user_id, folder, title, delta, created)
 								SELECT id, folder, title, delta, created FROM users
 								RIGHT JOIN (VALUES
-									('${req.user.username}', '${updatedDocumentTitle}', 'root', '${documentContents}'::jsonb, NOW())
+									('${req.user.username}', '${updatedDocumentTitle}', 0, '${documentContents}'::jsonb, NOW())
 								) AS doc (owner, title, folder, delta, created)
 								ON owner = username;`)
 								.then((results,err)=>{
