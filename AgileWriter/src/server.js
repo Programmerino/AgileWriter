@@ -83,7 +83,7 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 		let directory 		  = batch[0].value.rows;
 		let current_files 	  = batch[1].value.rows;
 		let current_folders   = batch[2].value.rows;
-		let root_is_collapsed = batch[0].value.rows.collapsed
+		let root_is_collapsed = batch[0].value.rows.shift().collapsed
 
 		let map_path = {};
 		let map_state = {};
