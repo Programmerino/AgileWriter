@@ -35,6 +35,14 @@ CREATE TABLE IF NOT EXISTS documents (
 	FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (user_id, folder) REFERENCES file_directory (user_id, folder_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS savedPrompts (
+	id SERIAL PRIMARY KEY,
+	user_id		BIGINT NOT NULL,
+	initialText	VARCHAR(65536) NOT NULL,
+	Prompt		VARCHAR(65536) NOT NULL,
+	FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 SET TIMEZONE = 'America/Denver';
 
 INSERT INTO users (username, password, created_on) VALUES 
