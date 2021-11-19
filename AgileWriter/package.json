@@ -21,7 +21,8 @@
 		"passport-local": "^1.0.0",
 		"pg": "^8.7.1",
 		"pg-connection-string": "^2.5.0",
-		"ts2fable": "^0.7.1"
+		"ts2fable": "^0.7.1",
+		"unique-names-generator": "^4.6.0"
 	},
 	"devDependencies": {
 		"nodemon": "^2.0.14",

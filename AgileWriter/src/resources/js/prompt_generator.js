@@ -17,6 +17,20 @@ function savePrompt(){
     num = (saveLi.childNodes.length) - 1;
 
     createButton(saveLi,num + 1);
+
+    let initText = document.getElementById('txtBox').value;
+    let prompt = document.getElementById('promptDisplay').innerText.replace(/\n/g,'\n');
+
+    console.log(initText,prompt);
+
+    $.ajax({
+        url: '/savePrompts',
+        type: 'POST',
+        cache: false,
+        data: {initText: initText,
+                prompt: prompt
+        }
+    });
 }
 
 //function Helpers_log(x) {\n

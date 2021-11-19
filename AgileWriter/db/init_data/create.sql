@@ -19,7 +19,9 @@ CREATE TABLE IF NOT EXISTS file_directory (
 	collapsed 	BOOLEAN DEFAULT TRUE,
 	UNIQUE (user_id, parent_id, folder_name),
 	PRIMARY KEY (user_id, folder_id),
-	FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE
+	FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT
+	reserved_name0 CHECK (folder_name <> '...'), CONSTRAINT
+	reserved_name1 CHECK (folder_name <> 'Delete')
 );
 
 CREATE TABLE IF NOT EXISTS documents (
@@ -30,8 +32,15 @@ CREATE TABLE IF NOT EXISTS documents (
 	created 	TIMESTAMPTZ NOT NULL,
 	modified 	TIMESTAMPTZ,
 	PRIMARY KEY (user_id, folder, title),
-	FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE,
-	FOREIGN KEY (user_id, folder) REFERENCES file_directory (user_id, folder_id) ON UPDATE CASCADE
+	FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (user_id, folder) REFERENCES file_directory (user_id, folder_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS savedPrompts (
+	prompt_id SERIAL PRIMARY KEY,
+	user_id		BIGINT NOT NULL,
+	initialText	VARCHAR(65536) NOT NULL,
+	Prompt		VARCHAR(65536) NOT NULL,
+	FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 SET TIMEZONE = 'America/Denver';
@@ -39,6 +48,15 @@ SET TIMEZONE = 'America/Denver';
 INSERT INTO users (username, password, created_on) VALUES 
 ('test' , '$2b$10$GoaXDragehkLX3VeoVajMu1D/foSrFdSF1c2VtB1mx9AGJQKG8Dcm', NOW()),
 ('dummy', '$2b$10$GoaXDragehkLX3VeoVajMu1D/foSrFdSF1c2VtB1mx9AGJQKG8Dcm', NOW());
+
+INSERT INTO savedPrompts (user_id, initialText, Prompt) 
+SELECT id AS user_id, initialText, Prompt FROM users
+RIGHT JOIN ( VALUES
+('test','hey','hey i suck at this'),
+('test','bye','bye bye'),
+('test','hello','hello world, i think this is really hard lolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololol')
+) AS sptable (owner, initialText, Prompt)
+ON owner = username;
 
 INSERT INTO file_directory (user_id, parent_id, folder_id, folder_name)
 SELECT id, parent_id, folder_id, folder_name FROM users
@@ -92,4 +110,3 @@ VALUES('test', 'Look at me!!!', 0,
 	NOW())
 ) AS doc (owner, title, folder, delta, created)
 ON owner = username;
-

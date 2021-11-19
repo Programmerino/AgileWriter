@@ -6,8 +6,17 @@ const flash = require('express-flash');					// TODO: Add comment
 const bcrypt = require("bcrypt");						// For encryption of passwords
 const passport = require("passport");					// For verifying
 const initializePassport = require("./passportConfig");	// Load passport config
-const {postgres} = require("./dbConfig");					// Load database config
+const postgres = require("./dbConfig");					// Load database config
 const ROOT_DIR_NICKNAME = "My Documents";				// Determines nickname for root
+// Get unique names!
+const { uniqueNamesGenerator, adjectives, animals } = require('unique-names-generator');
+var numDict = Array(990).fill().map((element,index) => (10+index).toString());
+const ung_config = { // Initialize config for unique name gen
+	dictionaries: [adjectives, animals, numDict],
+	length: 3,
+	separator: ' ',
+	style: 'capital'
+} 
 
 initializePassport(passport);
 app.use(bodyParser.json());              				// support json encoded bodies
@@ -50,7 +59,6 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 			SELECT parent_id, folder_id, folder_name, title, collapsed
 			FROM file_directory AS dir LEFT JOIN documents AS doc
 			ON folder = folder_id AND dir.user_id = doc.user_id
-
 			GROUP BY dir.user_id, parent_id, folder_id, folder_name, title, collapsed
 			HAVING dir.user_id = ${req.user.id}
 			ORDER BY parent_id,  folder_id, title DESC
@@ -93,7 +101,6 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 		let ordered_directory = {};
 
 		ordered_directory[0] = {};
-		root_directory[ROOT_DIR_NICKNAME] = ordered_directory[0];
 		map_parent[0] = 0;
 		map_path[0] = '';
 		map_path[map_path[0]] = 0;
@@ -102,7 +109,7 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 		// Child folders cannot be initialized before parent folders.
 		// The following for loop ensures they're visited in the correct order.
 		let i = 0;
-		let ordered_set = [];
+		let visit_order = [];
 		let found_set = {};
 		let stray_set = {};
 		let stray_index = {};
@@ -111,13 +118,13 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 		directory.forEach(folder => {
 			ordered_directory[folder.folder_id] = {}
 			if (found_set[folder.parent_id]) {
-				ordered_set.push(i++);
+				visit_order.push(i++);
 				if (!found_set[folder.folder_id]) {
 					found_set[folder.folder_id] = true;
 					Object.keys(stray_set).forEach(stray_id => {
 						if (stray_set[stray_id] == folder.folder_id) {
 							found_set[stray_id] = true;
-							ordered_set.push(stray_index[stray_id]);
+							visit_order.push(stray_index[stray_id]);
 							delete stray_set[stray_id];	
 						}
 					});
@@ -128,8 +135,8 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 			}
 		});
 
-		for (let i=0; i<ordered_set.length; i++) {
-			let folder = directory[ordered_set[i]];
+		visit_order.forEach(index => {
+			let folder = directory[index];
 			if (folder.folder_id != folder.parent_id)
 			{
 				ordered_directory[folder.parent_id][folder.folder_name] = ordered_directory[folder.folder_id];
@@ -138,10 +145,11 @@ app.get('/Documents*', checkNotAuthenticated, function(req, res) {
 				map_state[folder.folder_id] = folder.collapsed;
 				map_parent[folder.folder_id] = folder.parent_id;
 			}
-		};
+		});
 
 		let dir_files, dir_folders, next_dir;
 		let dir_id = map_path[dir_path];
+		root_directory[ROOT_DIR_NICKNAME] = ordered_directory[0];
 		
 		while (!dir_files && (next_dir = current_files.shift()))
 			if (dir_id == next_dir.folder)
@@ -252,7 +260,6 @@ app.post('/MoveItem', checkNotAuthenticated, function(req, res) {
 			res.send({failed:"Could not Update...", status: 409});
 		});
 	} else {
-		console.log(req.body);
 		let source     = req.body.source;
 		let delimiter  = source.search("/");
 		let src_folder = source.substring(0,  delimiter);
@@ -265,7 +272,7 @@ app.post('/MoveItem', checkNotAuthenticated, function(req, res) {
 			AND title = '${src_file}'
 		;`)
 		.then((results,err) => {
-			res.send({success:"Updated Successfully", status: 200});
+			res.send({success:"Deleted Successfully", status: 200});
 		})
 		.catch(err => {
 			console.log(err)
@@ -274,42 +281,75 @@ app.post('/MoveItem', checkNotAuthenticated, function(req, res) {
 	}
 });
 
-app.get('/Editor', checkNotAuthenticated, function(req, res) {
-	res.render('pages/word_processor', {
-		page_scripts: [ // Quill.js library
-			{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
-			{src:"/resources/js/editor.js"},
-			{	// Katex Library
-				src:"https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.js",
-				integrity:"sha384-GxNFqL3r9uRJQhR+47eDxuPoNE7yLftQM8LcxzgS4HT73tp970WS/wV5p8UzCOmb",
-				crossorigin:"anonymous"
-			}
-		],
-		page_link_tags: [
-			{rel:'stylesheet', href:'https://cdn.quilljs.com/1.3.6/quill.snow.css'},
-			{rel:'stylesheet', href:'/resources/css/editor.css'},
-			{rel:'preconnect', href:'https://fonts.googleapis.com'},
-			{rel:'preconnect', href:'https://fonts.gstatic.com', crossorigin:true},
-			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Abel&family=Amatic+SC&family=Andada+Pro&family=Anton&family=Bebas+Neue&family=Birthstone&family=Caveat&family=Crimson+Text&family=Dancing+Script&display=swap'},
-			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Dosis&family=Ephesis&family=Explora&family=Festive&family=Gluten&family=Heebo&family=Henny+Penny&family=Inconsolata&family=Indie+Flower&family=Josefin+Sans&display=swap'},
-			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
-			{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
-		],
-		document_delta: ''
-	});
+app.post('/DeleteItem', checkNotAuthenticated, function(req, res) {
+	if (req.body.type === 'folder') {
+		postgres.query(`
+			DELETE FROM file_directory
+			WHERE user_id = ${req.user.id}
+			AND (folder_id = ${req.body.source}
+			OR parent_id = ${req.body.source})
+		;`)
+		.then((results,err) => {
+			res.send({success:"Updated Successfully", status: 200});
+		})
+		.catch(err => {
+			console.log(err)
+			res.send({failed:"Could not Update...", status: 409});
+		});
+	} else {
+		let source     = req.body.source;
+		let delimiter  = source.search("/");
+		let src_folder = source.substring(0,  delimiter);
+		let src_file   = source.substring(1 + delimiter);
+		postgres.query(`
+			DELETE FROM documents
+			WHERE user_id = ${req.user.id}
+			AND folder = ${src_folder}
+			AND title = '${src_file}'
+		;`)
+		.then((results,err) => {
+			res.send({success:"Deleted Successfully", status: 200});
+		})
+		.catch(err => {
+			console.log(err)
+			res.send({failed:"Could not Update...", status: 409});
+		});
+	}
 });
 
-app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
-	let folder_id = req.params.folder.replace(/%20/g,' ');
-	let file = req.params.file;
-	postgres.query(`
-		SELECT delta
-		FROM documents
-		WHERE user_id=${req.user.id}
-		AND folder='${folder_id}'
-		AND title='${file}';
-	`)
-	.then((results, err) => {
+app.post('/NewFolder', checkNotAuthenticated, function(req, res) {
+	let unique_name = uniqueNamesGenerator(ung_config)
+	postgres
+		.query(`
+			INSERT INTO file_directory (user_id, parent_id, folder_id, folder_name)
+			SELECT user_id, parent_id, free_id, folder_name FROM (
+				SELECT t1.user_id, t1.folder_id+1 AS free_id
+				FROM file_directory AS t1
+				LEFT JOIN file_directory AS t2
+				ON t1.folder_id = t2.folder_id -1
+				AND t1.user_id = t2.user_id
+				WHERE t2.folder_id IS NULL
+				AND t1.user_id = ${req.user.id}
+				ORDER BY t1.folder_id
+				LIMIT 1
+			) AS next_free_id,
+			(VALUES(${req.body.parent}, '${unique_name}')) AS new_folder(parent_id, folder_name)
+			RETURNING folder_id
+		;`)
+		.then((results, err) => {	
+			res.send({name: unique_name, id: results.rows[0].folder_id})
+		});
+});
+
+
+app.get('/Editor', checkNotAuthenticated, function(req, res) {
+	postgres.query(`SELECT folder_name FROM file_directory
+	WHERE user_id='${req.user.id}' ORDER BY folder_id;`)
+	.then((results,err)=>{
+		let userDirecs = [];
+			for(var i = 0; i < results.rows.length; i++){
+				userDirecs[i] = results.rows[i].folder_name;
+			}
 		res.render('pages/word_processor', {
 			page_scripts: [ // Quill.js library
 				{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
@@ -330,9 +370,65 @@ app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
 				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
 				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
 			],
-			document_directory: '',
+			user_directories: userDirecs,
+			document_delta: '',
+            document_created: new Date()
+		});
+	})
+	
+});
+
+app.get('/Editor/:folder/:file', checkNotAuthenticated, function(req, res) {
+	let folder_id = req.params.folder.replace(/%20/g,' ');
+	let file = req.params.file;
+	let directory = [];
+	let current_dir = '';
+	Promise.allSettled([
+		postgres.query(`
+			SELECT delta, created
+			FROM documents
+			WHERE user_id=${req.user.id}
+			AND folder='${folder_id}'
+			AND title='${file}';
+		`),
+		postgres.query(`
+			SELECT folder_name FROM file_directory
+			WHERE user_id='${req.user.id}'
+		;`)
+	])
+	.then((batch, err)=>{
+		let docDelta = JSON.stringify(batch[0].value.rows[0].delta);
+		folder_count = batch[1].value.rows.length - 1;
+		for(var i = 0; i < batch[1].value.rows.length; i++){
+			directory[folder_count] = batch[1].value.rows[i].folder_name;
+			folder_count--;
+		} //Done a bit oddly to get the folder names into the same order as their id's
+		current_dir = directory[folder_id];
+		res.render('pages/word_processor', {
+			page_scripts: [ // Quill.js library
+				{src:"https://cdn.quilljs.com/1.3.6/quill.js"},	
+				{src:"/resources/js/editor.js"},
+				{	// Katex Library
+					src:"https://cdn.jsdelivr.net/npm/katex@0.13.18/dist/katex.min.js",
+					integrity:"sha384-GxNFqL3r9uRJQhR+47eDxuPoNE7yLftQM8LcxzgS4HT73tp970WS/wV5p8UzCOmb",
+					crossorigin:"anonymous"
+				}
+			],
+			page_link_tags: [
+				{rel:'stylesheet', href:'https://cdn.quilljs.com/1.3.6/quill.snow.css'},
+				{rel:'stylesheet', href:'/resources/css/editor.css'},
+				{rel:'preconnect', href:'https://fonts.googleapis.com'},
+				{rel:'preconnect', href:'https://fonts.gstatic.com', crossorigin:true},
+				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Abel&family=Amatic+SC&family=Andada+Pro&family=Anton&family=Bebas+Neue&family=Birthstone&family=Caveat&family=Crimson+Text&family=Dancing+Script&display=swap'},
+				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Dosis&family=Ephesis&family=Explora&family=Festive&family=Gluten&family=Heebo&family=Henny+Penny&family=Inconsolata&family=Indie+Flower&family=Josefin+Sans&display=swap'},
+				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Karla&family=Karma&family=Lato&family=Long+Cang&family=Lora&family=Montserrat&family=Mukta&family=Noto+Sans&family=Oswald&family=Oxygen&family=Poppins&family=Quicksand&display=swap'},
+				{rel:'stylesheet', href:'https://fonts.googleapis.com/css2?family=Roboto&family=Scheherazade&family=Shadows+Into+Light&family=Source+Code+Pro&family=Teko&family=Texturina&family=Ubuntu&family=Vollkorn&family=Work+Sans&family=Xanh+Mono&family=Yanone+Kaffeesatz&family=ZCOOL+KuaiLe&display=swap'}
+			],
+			document_directory: current_dir,
+			user_directories: directory,
 			document_title: file.replace(/-/g,' '),
-			document_delta: JSON.stringify(results.rows[0].delta)
+			document_delta: docDelta,
+			document_created: batch[0].value.rows[0].created
 		});
 	})
 	.catch(error => {
@@ -368,21 +464,32 @@ app.post('/LoadDocument', checkNotAuthenticated, function(req, res) {
 });
 
 app.post('/SaveDocument', checkNotAuthenticated, (req,res)=>{
-	let{documentContents, documentTitle, documentDirectory, savedDocBool} = req.body;
-	documentTitle = simpleParseSingleQuote(documentTitle);
+	let{documentContents, documentTitle, documentDirectory, currentDirectoryID, savedDocBool} = req.body;
+	documentTitle = simpleParseSingleQuote(documentTitle.trim());
 	documentContents = simpleParseSingleQuote(documentContents);
 	documentContentsJSON = JSON.parse(documentContents);
-	//console.log(documentContents);
-	//console.log(documentTitle);
-	//console.log(documentDirectory);
+	
+	// If the document does not have a name, it will be untitled
+	if (documentTitle.length == 0) documentTitle = "Untitled";
 
 	if(savedDocBool == "true") //If we're purely trying to update a document
 		{
-			postgres.query(`SELECT * FROM documents WHERE title='${documentTitle}' AND user_id='${req.user.id}';`)
+			postgres.query(`
+				SELECT * 
+				FROM documents
+				WHERE title='${documentTitle}'
+				AND user_id='${req.user.id}'
+				AND folder = ${currentDirectoryID}
+			;`)
 			.then((results,err) => {
 				if(results.rows.length) { //If the user is editing a previously saved document
-					postgres.query(`UPDATE documents SET delta = '${documentContents}'::jsonb
-									WHERE title='${documentTitle}' AND user_id='${req.user.id}'`)
+					postgres.query(`
+						UPDATE documents
+						SET delta = '${documentContents}'::jsonb
+						WHERE title='${documentTitle}'
+						AND user_id='${req.user.id}'
+						AND folder = ${currentDirectoryID}
+					;`)
 					.then((results,err)=>{
 						res.redirect("/Documents");
 					})
@@ -390,48 +497,77 @@ app.post('/SaveDocument', checkNotAuthenticated, (req,res)=>{
 				}
 			})
 		}
-	else { //If the user is creating and uploading a new document
-		postgres.query(`SELECT * FROM documents WHERE strpos(title, '${documentTitle}') > 0 AND user_id='${req.user.id}';`)
-		.then((results,err) => {
-			if(results.rows.length) { //If the user is attempting to title a document the same as a previous document
-				console.log(results.rows.length);
-				updatedDocumentTitle = documentTitle + " (" + results.rows.length + ")"; //Does the conventional addition to same file name of adding (i) where i is index
-				postgres.query(`INSERT INTO documents (user_id, folder, title, delta, created)
-								SELECT id, folder, title, delta, created FROM users
-								RIGHT JOIN (VALUES
-									('${req.user.username}', '${updatedDocumentTitle}', 'root', '${documentContents}'::jsonb, NOW())
-								) AS doc (owner, title, folder, delta, created)
-								ON owner = username;`)
-								.then((results,err)=>{
-									res.redirect("/Documents");
-								})
-								.catch(err=>{
-									throw err;
-								})
-				
-			}else{ //If a user is inserting a brand new document
-				postgres.query(`INSERT INTO documents (user_id, folder, title, delta, created)
-								SELECT id, folder, title, delta, created FROM users
-								RIGHT JOIN (VALUES
-									('${req.user.username}', '${documentTitle}', 'root', '${documentContents}'::jsonb, NOW())
-								) AS doc (owner, title, folder, delta, created)
-								ON owner = username;`)
-								.then((results,err)=>{
-									res.redirect("/Documents");
-								}) //For the insert statement I used what was similar to the create.sql
-			}
-		})
-	}
+	else postgres.query(`
+		SELECT * 
+		FROM documents 
+		WHERE STRPOS(title, '${documentTitle}') > 0 
+		AND user_id='${req.user.id}'
+		AND folder = ${documentDirectory}
+	;`)
+	.then((results,err) => {
+		if(results.rows.length) { 
+			// If the user is attempting to title a document the same as a previous document
+			updatedDocumentTitle = documentTitle + " (" + results.rows.length + ")";
+			//Does the conventional addition to same file name of adding (i) where i is index
+			postgres.query(`
+				INSERT INTO documents (user_id, folder, title, delta, created)
+				SELECT id, folder, title, delta, created
+				FROM users RIGHT JOIN (VALUES
+					('${req.user.username}', '${updatedDocumentTitle}', ${documentDirectory}, '${documentContents}'::jsonb, NOW())
+				) AS doc (owner, title, folder, delta, created)
+				ON owner = username
+			;`)
+			.then((results,err)=>{
+				res.redirect("/Documents");
+			})
+			.catch(err=>{
+				throw err;
+			});
+			
+		}else{ //If a user is inserting a brand new document
+			//documentDirectory = parseInt(documentDirectory);
+			postgres.query(`
+				INSERT INTO documents (user_id, folder, title, delta, created)
+				SELECT id, folder, title, delta, created 
+				FROM users RIGHT JOIN (VALUES
+					('${req.user.username}', '${documentTitle}', '${documentDirectory}'::integer, '${documentContents}'::jsonb, NOW())
+				) AS doc (owner, title, folder, delta, created)
+				ON owner = username
+			;`)
+			.then((results,err)=>{
+				res.redirect("/Documents");
+			}) //For the insert statement I used what was similar to the create.sql
+		}
+	})
 });
 
 app.get('/Generator', checkNotAuthenticated, function(req, res) {
-	res.render('pages/prompt_generator', {
-		page_scripts: [
-			{src:'/resources/js/prompt_generator.js',type:'text/javascript'},
-			{src:'/resources/js/bundle.js',type:'text/javascript'}
-		],
-		page_link_tags: [],
-	});
+	postgres
+        .query(`
+            SELECT initialText, Prompt
+            FROM savedPrompts
+            WHERE user_id = ${req.user.id}
+        ;`)
+        .then((results, err) => {
+            
+            res.render('pages/prompt_generator', {
+                page_scripts: [
+                    {src:'/resources/js/prompt_generator.js',type:'text/javascript'},
+                    {src:'/resources/js/bundle.js',type:'text/javascript'}
+                ],
+                page_link_tags: [],
+                prompts: results.rows,
+            });
+        })
+        .catch(error => console.log(error));
+});
+
+app.post('/savePrompts', checkNotAuthenticated, function(req,res) {
+	postgres.query(`
+		INSERT INTO savedPrompts(user_id, initialText, Prompt)
+		VALUES (${req.user.id}, '${req.body.initText}', '${req.body.prompt}')
+	;`)
+	.catch(error => console.log(error));
 });
 
 app.get('/Register', checkAuthenticated, function(req, res) {
@@ -522,12 +658,14 @@ app.post('/Register', async (req, res)=>{
 					)
 					.then((err, results) => {
 							postgres.query(`
-							INSERT INTO file_directory (user_id, directory)
-							SELECT id, folder FROM users
-							RIGHT JOIN (VALUES 
-								('${username}', 'root'),
-								('${username}', 'root/Personal')
-							) AS dir (owner, folder)
+							
+							INSERT INTO file_directory (user_id, parent_id, folder_id, folder_name)
+							SELECT id, parent_id, folder_id, folder_name FROM users
+							RIGHT JOIN (
+							VALUES
+								('${username}',0,  0, 'root'),
+								('${username}',  0,  1, 'Personal')
+							) AS dir (owner, parent_id, folder_id, folder_name)
 							ON owner = username;`)
 							.then((results,err)=>{
 								console.log("HELLLLLO THEREEEEEEEEE3");

@@ -7,7 +7,7 @@
 			<div class="col-md-3 justify-content-center" id="directory_window">
 				<div class="card">
 					<div class="card-header">
-						<h3>Directory</h3>
+						<h3 class="text-danger">Directory</h3>
 					</div>
 					<div class="card-body">
 						<% let generateDirectory = function(directory, level, path) {
@@ -76,7 +76,7 @@
 			<div class="col">
 				<div class="flex-row bg-light">
 					<div class="card-header">
-						<h3><%= dir_current %></h3>
+						<h3 class="text-danger"><%= dir_current %></h3>
 					</div>
 					<div class="container-fluid" id=<%=`folder-${dir_id}`%>>
 						<div class="row"  id="document_window"">
@@ -133,11 +133,69 @@
 								`
 							}); %>
 							<%- document_window %>
+							<div class="col-auto" id="deletefile">
+								<div class="draggable trash">
+									<div class ="card-body bg-transparent text-center">
+										<img src="/resources/img/pre-thrown-away.png" width=150 height=150 ondragStart="return false">
+									</div>
+									<div class="card-footer bg-transparent text-center">Delete</div>
+								</div>
+							</div>
 							<div class="col"></div>
 						</div>
 					</div>
 				</div>
 
+			</div>
+		</div>
+	</div>
+	<div class="modal" id="delete-modal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Delete Item?</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Are you sure you want to delete this item? If this is a folder, deleting it will also delete all of the folder's contents.</p>
+					<p">This action is <b class="text-danger">permanent</b>.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onClick="resetTrashIcon()">Cancel</button>
+					<button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="deleteItemShortcut()">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal" id="move-conflict-modal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Move conflict</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>There is already a document/file with that name in that location.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Okay</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal" id="rename-conflict-modal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Rename conflict</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>There is already a document/file with that name in this location.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Okay</button>
+				</div>
 			</div>
 		</div>
 	</div>

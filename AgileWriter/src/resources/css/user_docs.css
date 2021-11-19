@@ -19,7 +19,7 @@
 	border-color:antiquewhite
 }
 
-.col-auto {
+.col-auto, .draggable {
 	border-radius: 40px;
 }
 

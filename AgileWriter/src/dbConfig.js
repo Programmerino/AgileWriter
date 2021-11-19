@@ -8,4 +8,4 @@ const config = parse(isProduction ? process.env.DATABASE_URL : connectionString)
 if (isProduction) config.ssl = {rejectUnauthorized: false};
 const postgres = new Pool(config);
 postgres.connect();
-module.exports = { postgres };
+module.exports = postgres;
