@@ -36,6 +36,7 @@
 									<input id="documentContents" name="documentContents" hidden value="">
 									<input id="documentTitle" name="documentTitle" hidden value="">
 									<input id="documentDirectory" name="documentDirectory" hidden value="">
+									<input id="currentDirectoryID" name="currentDirectoryID" hidden value="">
 									<input id="savedDocBool" name="savedDocBool" hidden value="true">
 									<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Save Document</button>
 									
@@ -50,6 +51,7 @@
 								<input id="documentContents" name="documentContents" hidden value="">
 								<input id="documentTitle" name="documentTitle" hidden value="">
 								<input id="documentDirectory" name="documentDirectory" hidden value="">
+								<input id="currentDirectoryID" name="currentDirectoryID" hidden value="">
 								<input id="savedDocBool" name="savedDocBool" hidden value="false">
 								<button class="btn btn-danger btn-lg" type="button" onclick="getDocument()">Save Document</button>
 								<p id="docDirec" name="docDirec" class="lead"></p>
@@ -130,6 +132,5 @@
 </body>
 <footer>
 <%- include('../partials/script_loader') %>
-<script src="../../resources/js/editor.js"></script>
 </footer>
 </html>

@@ -1,8 +1,8 @@
-const font_families = ['Abel','Amatic SC','Andada Pro','Anton','Bebas Neue','Birthstone','Caveat','Crimson Text','Dancing Script','Dosis','Ephesis','Explora','Festive','Gluten','Heebo','Henny Penny','Inconsolata','Josefin Sans','Indie Flower','Karla','Karma','Lato','Long Cang','Lora','monospace','Montserrat','Mukta','Noto Sans','Oswald','Oxygen','Poppins','Quicksand','Roboto','Sans Serif','Scheherazade','serif','Source Code Pro','Shadows Into Light','Teko','Texturina','Ubuntu','Vollkorn','Work Sans','Xanh Mono','Yanone Kaffeesatz','ZCOOL KuaiLe']
+const font_fam = ['Abel','Amatic SC','Andada Pro','Anton','Bebas Neue','Birthstone','Caveat','Crimson Text','Dancing Script','Dosis','Ephesis','Explora','Festive','Gluten','Heebo','Henny Penny','Inconsolata','Josefin Sans','Indie Flower','Karla','Karma','Lato','Long Cang','Lora','monospace','Montserrat','Mukta','Noto Sans','Oswald','Oxygen','Poppins','Quicksand','Roboto','Sans Serif','Scheherazade','serif','Source Code Pro','Shadows Into Light','Teko','Texturina','Ubuntu','Vollkorn','Work Sans','Xanh Mono','Yanone Kaffeesatz','ZCOOL KuaiLe']
 const font_sizes = ['8px','9px','10px','11px','12px','13px','14px','16px','18px','20px','24px','32px','42px','54px','68px','84px','98px']
 var Font = Quill.import('attributors/style/font');
 var Size = Quill.import('attributors/style/size');
-Font.whitelist = font_families
+Font.whitelist = font_fam
 Size.whitelist = font_sizes
 Quill.register(Font,true)
 Quill.register(Size,true)
@@ -51,29 +51,31 @@ function loadEditor() {
 }
 
 function getDocument() {
+	let url = window.location.href
+	let file_key = url.substring(url.search('Editor/')+7)
+	let file_folder = file_key.substring(0, file_key.search('/'));
+	let file_name = file_key.substring(1+file_key.search('/')).replace(/%20/g,' ');
+	document.getElementById("currentDirectoryID").setAttribute("value", file_folder);
+
+
     console.log("Hello there!!!!!!");
     //var editor = document.getElementById("editor");
     var contents = editor.getContents();
     var stringContents = JSON.stringify(contents);
-    console.log(stringContents);
     document.getElementById("documentContents").setAttribute("value", stringContents);
 
     var form = document.getElementById("saveDocument");
 
     var title = document.getElementById("docTitle").value;
     if(!title) title = document.getElementById("docTitle").innerHTML;
-    console.log(title);
     document.getElementById("documentTitle").setAttribute("value", title);
 
     var selectedDirectory = document.getElementById("selectDirec");
     var directory = document.getElementById("docDirec").innerHTML;
     if(selectedDirectory) {
-        41	
-                directory = selectedDirectory.value - 1;
-        42	
-                if(directory < 0) {directory = 0;}
-        43	
-            }
+		directory = selectedDirectory.value - 1;
+		if(directory < 0) {directory = 0;}
+	}
     document.getElementById("documentDirectory").setAttribute("value", directory);
     form.submit();
 }
@@ -90,7 +92,7 @@ var editor = new Quill('#editor', {
         },
         toolbar: [
             [
-                {'font':font_families},
+                {'font':font_fam},
                 {'size':font_sizes}
             ],
             [
@@ -123,8 +125,6 @@ var editor = new Quill('#editor', {
         ]
     }
 });
-
-modules.export(getDocument());
 
 // The bold and underline keyboard shortcuts are already built
 

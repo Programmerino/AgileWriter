@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS file_directory (
 	collapsed 	BOOLEAN DEFAULT TRUE,
 	UNIQUE (user_id, parent_id, folder_name),
 	PRIMARY KEY (user_id, folder_id),
-	FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE
+	FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS documents (
@@ -30,8 +30,8 @@ CREATE TABLE IF NOT EXISTS documents (
 	created 	TIMESTAMPTZ NOT NULL,
 	modified 	TIMESTAMPTZ,
 	PRIMARY KEY (user_id, folder, title),
-	FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE,
-	FOREIGN KEY (user_id, folder) REFERENCES file_directory (user_id, folder_id) ON UPDATE CASCADE
+	FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (user_id, folder) REFERENCES file_directory (user_id, folder_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 SET TIMEZONE = 'America/Denver';
