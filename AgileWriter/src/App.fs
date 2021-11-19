@@ -2,13 +2,39 @@ module App
 
 open Browser.Types
 open Browser
-open FSharpPlus
+open Fable.Core.JsInterop
+open Fable.Core.DynamicExtensions
+
+module Async =
+    let map f op = async {
+        let! x    = op
+        let value = f x
+        return value
+    }
+
+let tap f x = f x; x
+let resultGet x = 
+    match x with
+    | Ok x -> x
+    | Error _ -> failwith "was none"
+
+let optionOfResult x = 
+    match x with
+    | Ok x -> Some x
+    | Error _ -> None
+    
+let optionToResultWith e x =
+    match x with
+    | Some x -> Ok x
+    | None -> Error e
+
+let stringTrim (trimChars: char seq) (source: string) = source.Trim (Seq.toArray trimChars)
 
 module Helpers =
     let log x = printfn $"###{x}"
     let inline resLog x = x |> Result.mapError (tap log)
-    let inline logUnwrap x = x |> (resLog >> Result.get)
-    let inline logChoose x = x |> (resLog >> Option.ofResult)
+    let inline logUnwrap x = x |> (resLog >> resultGet)
+    let inline logChoose x = x |> (resLog >> optionOfResult)
 
 open Helpers
 
@@ -55,12 +81,10 @@ let eleutherReq x callback =
 
     xhr.onreadystatechange <-
         (fun () ->
-            printfn "asljfasd"
-
             match xhr.readyState with
             | ReadyState.Done ->
                 Some
-                <| (EleutherResponse(xhr.responseText |> String.trim [ '['; ']' ]))
+                <| (EleutherResponse(xhr.responseText |> stringTrim [ '['; ']' ]))
             | _ -> None
             |> callback)
 
@@ -75,6 +99,15 @@ let generatePrompt ctx =
           Temperature = 0.8M
           ResponseLength = 128
           RemoveInput = false }
+    )
+
+let generatePromptNoInput (ctx: string) =
+    eleutherReqAsync (
+        { Context = ctx.Replace("\n","\\n")
+          TopP = 0.9M
+          Temperature = 0.8M
+          ResponseLength = 128
+          RemoveInput = true }
     )
 
 type PromptInfo = { Id: int; Text: string }
@@ -99,8 +132,8 @@ let generatePromptButton num idpref x =
     button.onclick <- (fun _ -> setPrompt x num)
     newel.appendChild (button) |> ignore
     newel
-    
-    (*
+
+(*
                                 <li class="list-group-item" style="text-align: center;">
                                 <button class="rounded bg-dark btn-outline-dark text-light">Prompt 1</button>
                             </li>*)
@@ -111,17 +144,17 @@ let newPrompt () =
 
     eleutherReqAsync (
         { Context =
-              (document.getElementById("txtBox") :?> HTMLInputElement)
-                  .value
+            (document.getElementById ("txtBox") :?> HTMLInputElement)
+                .value
           TopP = 0.9M
           Temperature = 0.8M
           ResponseLength = 128
           RemoveInput = false }
     )
     |> Async.map (tap (fun x -> console.log ($"{x}")))
-    |> Async.map (Option.map(fun x -> x.generated_text))
+    |> Async.map (Option.map (fun x -> x.generated_text))
     |> Async.map (
-        Option.toResultWith "request failed"
+        optionToResultWith "request failed"
         >> logUnwrap
         >> tap (fun x -> setPrompt x promptCount)
     )
@@ -146,3 +179,163 @@ let removePrompt () =
     document
         .getElementById($"generatedprompt{active}")
         .remove ()
+
+open Quill
+open Fable.Core
+
+// <div class="autocomplete-container" style="position: absolute; visibility: visible; top: 184.594px; left: 165px;">
+//    <ul class="autocomplete-list">
+//       <li class="autocomplete-item selected" data-index="0" data-denotation-char="" data-id=" ." data-value=" ."> .</li>
+//       <li class="ql-mention-list-item" data-index="1" data-denotation-char="" data-id=" j
+//          You" data-value=" j
+//          You"> j↵You</li>
+//    </ul>
+// </div>
+
+module Autocomplete =
+    open CaretPos
+
+    type AutocompleteItem = string * string
+
+    let makeAutoCompleteBox top left list =
+        let container = document.createElement("div")
+        container.className <- "autocomplete-container"
+        container.setAttribute("style", $"position: absolute; visibility: visible; top: {top}px; left: {left}px;")
+        let listE = document.createElement("ul")
+        listE.className <- "autocomplete-list"
+        listE.id <- "autocomplete-list"
+        list |> List.mapi (fun i x ->
+            let li = document.createElement("li")
+            if i = 0 then
+                li.className <- "autocomplete-item selected"
+            else
+                li.className <- "autocomplete-item"
+            li.setAttribute("data-value", x)
+            li.id <- $"autocomplete-item{i}"
+            li.innerText <- x.Replace("\n", "↵")
+            li
+        ) |> List.map (fun x -> listE.appendChild(x) |> ignore)
+        |> ignore
+        container.appendChild(listE) |> ignore
+        container
+
+    let attachQuill (x: Quill) =
+        let mutable runningGen = false
+        let mutable box = makeAutoCompleteBox 0 0 ["Test value 1";"Test value\n2"]
+        
+        box?style?visibility <- "hidden"
+
+        document.body.appendChild(box) |> ignore
+
+        let resize () =
+            let caret = CaretPos.offset(element = x.root, ?settings = None)
+            box?style?left <- $"{caret.left}px"
+            box?style?top <- $"{caret.top - caret.height + 32.0}px"
+            console.log(caret)
+
+        // let filterOut txt =
+        //         let children = (document.getElementById("autocomplete-list")).children
+        //         for i in 0..children.length - 1 do
+        //             let childText = children.[i].getAttribute("data-value")
+        //             let newVal = if txt |> Seq.last = (childText |> Seq.head) then Seq.tail childText |> System.String.Concat else ""
+        //             children.[i].setAttribute("data-value", newVal)
+        //             children.[i].innerHTML <- newVal.Replace("\n", "↵")
+        //         ()
+
+        x.``on_text-change`` (fun _ ->
+            if box?style?visibility = "visible" then resize()
+            // filterOut (x.getText())
+            ()
+        ) |> ignore
+        window.addEventListener("resize", fun _ ->
+            if box?style?visibility = "visible" then resize()
+            ()
+        )
+
+        x.keyboard.addBinding(key = !!{|key = "up"; ctrlKey = Some true|},
+            callback = (fun _ _ ->
+                if not runningGen then 
+                    printfn "up"
+                    let children = (document.getElementById("autocomplete-list")).children
+                    let mutable setter = true
+                    for i in 0..children.length - 1 do
+                        if children.[i].getAttribute("class") = "autocomplete-item selected" && setter then
+                            children.[i].setAttribute("class", "autocomplete-item")
+                            let bound = max(i - 1) 0
+                            children.[bound].setAttribute("class", "autocomplete-item selected")
+                            setter <- false
+                    ()
+            )
+        )
+
+        x.keyboard.addBinding(key = !!{|key = "down"; ctrlKey = Some true|},
+            callback = (fun _ _ ->
+                if not runningGen then 
+                    printfn "down"
+                    let children = (document.getElementById("autocomplete-list")).children
+                    let mutable setter = true
+                    for i in 0..children.length - 1 do
+                        if children.[i].getAttribute("class") = "autocomplete-item selected" && setter then
+                            children.[i].setAttribute("class", "autocomplete-item")
+                            let bound = min(i + 1) (children.length - 1)
+                            children.[bound].setAttribute("class", "autocomplete-item selected")
+                            setter <- false
+                    ()
+            )
+        )
+        x.keyboard?bindings.["13"]?unshift(
+            !!{|key = "enter"; ctrlKey = true; altKey = false; handler = (fun range _ ->
+                if not runningGen then 
+                    if box?style?visibility = "visible" then
+                        let children = (document.getElementById("autocomplete-list")).children
+                        for i in 0..children.length - 1 do
+                            let elem = document.getElementById($"autocomplete-item{i}")
+                            if elem.className = "autocomplete-item selected" then
+                                x.insertText(range?index, elem.getAttribute("data-value")) |> ignore
+                                box?style?visibility <- "hidden"
+            )|}
+        )
+
+        x.keyboard.addBinding(key = !!{|key = "g"; ctrlKey = Some true|},
+            callback = (fun _ _ ->
+               if not runningGen then
+                    runningGen <- true
+                    box <- makeAutoCompleteBox 0 0 ["..."]
+                    document.getElementsByClassName("autocomplete-container").[0].remove()
+                    document.body.appendChild(box) |> ignore
+                    resize()
+                    generatePromptNoInput (x.getText())
+                    |> Async.map(fun x ->
+                        match x with
+                        | Some x -> x.generated_text
+                        | None -> console.log(x); ""
+                    )
+                    |> Async.map(fun x ->
+                        box <- makeAutoCompleteBox 0 0 [x]
+                        document.getElementsByClassName("autocomplete-container").[0].remove()
+                        document.body.appendChild(box) |> ignore
+                        resize()
+                    )
+                    |> Async.map(fun _ ->
+                        runningGen <- false
+                    )
+                    |> Async.StartAsPromise
+                    |> ignore
+                else
+                    printfn "already running"
+            )
+        )
+
+let editor: Quill = window?editor
+
+let attachme () =
+    Autocomplete.attachQuill editor |> ignore
+
+// editor.``once_editor-change`` (U2.Case1 (fun _ _ _ ->
+//     attachme ()
+//     Some (upcast ())
+// )) |> ignore
+
+window.addEventListener("load", fun _ ->
+    attachme ()
+) |> ignore

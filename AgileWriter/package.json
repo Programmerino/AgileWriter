@@ -4,12 +4,15 @@
 	"version": "3.0.0",
 	"private": true,
 	"dependencies": {
+		"@types/quill": "^2.0.0",
+		"@types/textarea-caret": "^3.0.1",
 		"bcrypt": "^3.0.6",
 		"body-parser": "^1.19.0",
+		"caret-pos": "^2.0.0",
+		"dotenv": "^10.0.0",
 		"ejs": "^3.1.5",
 		"ejs-lint": "^1.1.0",
 		"express": "^4.17.1",
-		"dotenv": "^10.0.0",
 		"express-flash": "0.0.2",
 		"express-session": "^1.17.2",
 		"node-gyp": "^8.3.0",
@@ -17,7 +20,8 @@
 		"passport": "^0.5.0",
 		"passport-local": "^1.0.0",
 		"pg": "^8.7.1",
-		"pg-connection-string":  "^2.5.0"
+		"pg-connection-string": "^2.5.0",
+		"ts2fable": "^0.7.1"
 	},
 	"devDependencies": {
 		"nodemon": "^2.0.14",
@@ -31,7 +35,7 @@
 	"engineStrict": true,
 	"scripts": {
 		"build": "dotnet fable src && webpack",
-		"watch-compile": "dotnet fable watch src",
+		"watch-compile": "dotnet fable watch src --runWatch npx webpack",
 		"start": "node src/server.js",
 		"dev": "nodemon src/server.js -L"
 	}

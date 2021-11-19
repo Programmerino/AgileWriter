@@ -11,3 +11,58 @@
 .text-truncate {
   max-width: 100%;
 }
+
+.autocomplete-container {
+  width: 320px;
+  border: 1px solid #F0F0F0;
+  border-radius: 4px;
+  background-color: #FFFFFF;
+  box-shadow: 0 2px 12px 0 rgb(30 30 30 / 8%);
+  z-index: 9001;
+  font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+.autocomplete-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  display: block;
+  font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+.autocomplete-item.selected {
+  background-color: #D3E1EB;
+  text-decoration: none;
+}
+
+.autocomplete-item {
+  cursor: pointer;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 20px;
+  vertical-align: middle;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  display: list-item;
+  text-align: -webkit-match-parent;
+  font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 16px;
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}

@@ -8,7 +8,7 @@ module.exports = {
     mode: "development",
     entry: "./src/App.fs.js",
     output: {
-        path: path.join(__dirname, "./public"),
+        path: path.join(__dirname, "./src/resources/js"),
         filename: "bundle.js",
         libraryTarget: 'var',
         library: 'fscode'
