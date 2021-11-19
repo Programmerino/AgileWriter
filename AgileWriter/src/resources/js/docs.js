@@ -204,6 +204,7 @@ function item_rename(target_id) {
 					target.value = old_name;
 					matching_target.innerText = old_name;
 					link_target.href = old_path;
+					$('#rename-conflict-modal').modal('show')
 				}
 			},
 			error: () => {
@@ -226,6 +227,7 @@ function item_rename(target_id) {
 				if (result.status == 409) {
 					target.value = old_name;
 					link_target.value = old_link;
+					$('#rename-conflict-modal').modal('show')
 				}
 			},
 			error: () => {
