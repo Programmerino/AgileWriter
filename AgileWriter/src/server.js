@@ -552,8 +552,10 @@ app.get('/Generator', checkNotAuthenticated, function(req, res) {
 });
 
 app.post('/savePrompts', checkNotAuthenticated, function(req,res) {
-	postgres.query(`INSERT INTO savedPrompts(id, initialText, Prompt)
-					VALUES (${req.user.id}, \`${req.body.initText}\`, '${req.body.prompt}');`)
+	postgres.query(`
+		INSERT INTO savedPrompts(user_id, initialText, Prompt)
+		VALUES (${req.user.id}, '${req.body.initText}', '${req.body.prompt}')
+	;`)
 	.catch(error => console.log(error));
 });
 
