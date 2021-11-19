@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS documents (
 );
 
 CREATE TABLE IF NOT EXISTS savedPrompts (
-	id SERIAL PRIMARY KEY,
+	prompt_id SERIAL PRIMARY KEY,
 	user_id		BIGINT NOT NULL,
 	initialText	VARCHAR(65536) NOT NULL,
 	Prompt		VARCHAR(65536) NOT NULL,
@@ -48,6 +48,15 @@ SET TIMEZONE = 'America/Denver';
 INSERT INTO users (username, password, created_on) VALUES 
 ('test' , '$2b$10$GoaXDragehkLX3VeoVajMu1D/foSrFdSF1c2VtB1mx9AGJQKG8Dcm', NOW()),
 ('dummy', '$2b$10$GoaXDragehkLX3VeoVajMu1D/foSrFdSF1c2VtB1mx9AGJQKG8Dcm', NOW());
+
+INSERT INTO savedPrompts (user_id, initialText, Prompt) 
+SELECT id AS user_id, initialText, Prompt FROM users
+RIGHT JOIN ( VALUES
+('test','hey','hey i suck at this'),
+('test','bye','bye bye'),
+('test','hello','hello world, i think this is really hard lolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololollolololololololololololololol')
+) AS sptable (owner, initialText, Prompt)
+ON owner = username;
 
 INSERT INTO file_directory (user_id, parent_id, folder_id, folder_name)
 SELECT id, parent_id, folder_id, folder_name FROM users

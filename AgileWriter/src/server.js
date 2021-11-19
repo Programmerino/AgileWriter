@@ -542,13 +542,24 @@ app.post('/SaveDocument', checkNotAuthenticated, (req,res)=>{
 });
 
 app.get('/Generator', checkNotAuthenticated, function(req, res) {
-	res.render('pages/prompt_generator', {
-		page_scripts: [
-			{src:'/resources/js/prompt_generator.js',type:'text/javascript'},
-			{src:'/resources/js/bundle.js',type:'text/javascript'}
-		],
-		page_link_tags: [],
-	});
+	postgres
+        .query(`
+            SELECT initialText, Prompt
+            FROM savedPrompts
+            WHERE user_id = ${req.user.id}
+        ;`)
+        .then((results, err) => {
+            
+            res.render('pages/prompt_generator', {
+                page_scripts: [
+                    {src:'/resources/js/prompt_generator.js',type:'text/javascript'},
+                    {src:'/resources/js/bundle.js',type:'text/javascript'}
+                ],
+                page_link_tags: [],
+                prompts: results.rows,
+            });
+        })
+        .catch(error => console.log(error));
 });
 
 app.post('/savePrompts', checkNotAuthenticated, function(req,res) {
