@@ -1,5 +1,5 @@
 # Agile Writer
-## CSCI-3308, Team 018-01, Fall 2021
+### CSCI-3308, Team 018-01, Fall 2021
 ###### Project Members
 | Team Amazone         |                      |
 | -------------------- | -------------------- |
