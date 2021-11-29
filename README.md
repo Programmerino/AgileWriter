@@ -1,11 +1,11 @@
 # Agile Writer
-### CSCI-3308, Team 018-01, Fall 2021
+## CSCI-3308, Team 018-01, Fall 2021
 ###### Project Members
 | Team Amazone         |                      |
 | -------------------- | -------------------- |
-| Nolan Ales           | Davis Davalos-DeLosh |
+| Nolan Ales           | Aleksey Huhua        |
 | James Boynton        | James Vogenthaler    |
-| Aleksey Huhua        | Beff Jezos           |
+| Davis Davalos-DeLosh | Beff Jezos           |
 ###### Project Description
 A “smart” processor with prompt generation, autocompletion, and more. Our application features a server-based user login and registration and file directory service as well as client side rich-text-editing and dynamic AI text generation. Users can create, rename, reorganize, and delete documents at their leisure. Our rich-text editor features dozens of styling options and up to 1GB of potential storage per document. Additionally, when stalled for thoughts or when at a loss for words, our word processor is linked to an open-sourced AI that will provide a suggestion to keep your thoughts moving. Our project also features a prompt generation page to get ideas started with the ability to save and load previously created prompts.
 
